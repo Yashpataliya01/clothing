@@ -7,7 +7,8 @@ app.use(express.json());
 // get categories based on for
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Categories.find({ gender: req.query.gender });
+    const query = req.query.gender ? { gender: req.query.gender } : {};
+    const categories = await Categories.find(query);
     res.status(200).json(categories);
   } catch (error) {
     res.status(500).json({ message: error.message });

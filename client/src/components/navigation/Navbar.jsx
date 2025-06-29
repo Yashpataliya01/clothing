@@ -1,10 +1,28 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ShoppingCart, Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = ["Home", "Shop", "Men", "Women", "Sale"];
+  const navLinks = [
+    {
+      name: "Home",
+      link: "/",
+    },
+    {
+      name: "Products",
+      link: "/products",
+    },
+    {
+      name: "About",
+      link: "/about",
+    },
+    {
+      name: "Contact",
+      link: "/contact",
+    },
+  ];
 
   return (
     <nav className="bg-white shadow-md">
@@ -17,13 +35,13 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <div className="hidden md:flex space-x-8 items-center">
           {navLinks.map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
+            <Link
+              key={link.link}
+              to={link.link}
               className="text-gray-700 hover:text-black font-medium transition"
             >
-              {link}
-            </a>
+              {link.name}
+            </Link>
           ))}
 
           {/* Search */}
@@ -53,13 +71,13 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden px-6 pb-4 space-y-3">
           {navLinks.map((link) => (
-            <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
+            <Link
+              key={link.name}
+              to={link.link}
               className="block text-gray-700 hover:text-black text-lg font-medium"
             >
-              {link}
-            </a>
+              {link.name}
+            </Link>
           ))}
           <div className="mt-4 flex items-center space-x-2">
             <input

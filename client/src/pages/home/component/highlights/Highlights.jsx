@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export default function EditorialProductSpotlight() {
   return (
-    <section className="w-full bg-white py-0 md:py-20 sm:py-10 overflow-hidden">
+    <section className="w-full py-0 md:py-20 sm:py-10 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         {/* Product Image */}
         <motion.div
@@ -11,7 +11,7 @@ export default function EditorialProductSpotlight() {
           transition={{ duration: 0.7, ease: "easeOut" }}
           viewport={{ once: true }}
         >
-          <div className="relative overflow-hidden rounded-xl group">
+          <div className="relative overflow-hidden group">
             <img
               src="https://cottonon.com/on/demandware.static/-/Library-Sites-cog-megastore-shared-library/default/dw17ddc8da/group/home-page/2025/06_jun/US/C_BP_WK50_US_3901515_TERTIARY_DT.jpg"
               alt="Product"
