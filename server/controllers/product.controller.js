@@ -1,5 +1,6 @@
 import express from "express";
 import Products from "../models/product.model.js";
+import Categories from "../models/categorie.model.js";
 
 const app = express();
 app.use(express.json());
@@ -8,28 +9,65 @@ app.use(express.json());
 export const getProducts = async (req, res) => {
   const { category, size, colors, gender, tags, minPrice, maxPrice } =
     req.query;
+  console.log("Received gender query:", gender);
   try {
     // Build query object
     const query = {};
     if (category) query.category = category;
-    if (size) query.size = { $in: size.split(",") };
-    if (colors) query["variants.color"] = { $in: colors.split(",") };
-    if (gender) query["category.gender"] = gender;
-    if (tags) query.tag = { $in: tags.split(",") };
+    if (size) query.size = { $in: size.split(",").map((s) => s.trim()) };
+    if (colors)
+      query["variants.color"] = { $in: colors.split(",").map((c) => c.trim()) };
     if (minPrice || maxPrice) {
       query.$or = [
         {
-          discountedPrice: { $gte: minPrice || 0, $lte: maxPrice || Infinity },
+          discountedPrice: {
+            $gte: Number(minPrice) || 0,
+            $lte: Number(maxPrice) || Infinity,
+          },
         },
         {
           discountedPrice: null,
-          price: { $gte: minPrice || 0, $lte: maxPrice || Infinity },
+          price: {
+            $gte: Number(minPrice) || 0,
+            $lte: Number(maxPrice) || Infinity,
+          },
         },
       ];
     }
+    if (tags) query.tag = { $in: tags.split(",").map((t) => t.trim()) };
+
+    // Handle gender filter
+    if (gender) {
+      const genderValues = gender.split(",").map((g) => g.trim());
+      console.log("Gender values:", genderValues);
+      // Find category IDs where gender matches
+      const categories = await Categories.find({
+        gender: { $in: genderValues },
+      }).select("_id");
+      const categoryIds = categories.map((cat) => cat._id);
+      console.log("Matching category IDs:", categoryIds);
+      if (categoryIds.length > 0) {
+        query.category = { $in: categoryIds };
+      } else {
+        // If no categories match the gender, return empty result
+        return res.status(200).json([]);
+      }
+    }
 
     const products = await Products.find(query).populate("category");
+    console.log("Filtered products:", products);
     res.status(200).json(products);
+  } catch (error) {
+    console.error("Error in getProducts:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Products.findById(req.params.id).populate("category");
+    if (!product) return res.status(404).json({ message: "Product not found" });
+    res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

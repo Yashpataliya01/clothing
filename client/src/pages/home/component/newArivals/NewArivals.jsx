@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 
 export default function NewArrivalsGrid({ products }) {
   const [data, setData] = useState([]);
+  // State to track selected color for each product
+  const [selectedColors, setSelectedColors] = useState({});
+
   console.log(data, "data");
 
   const getProductdata = async () => {
@@ -23,7 +26,6 @@ export default function NewArrivalsGrid({ products }) {
   const parseColor = (colorName) => {
     if (!colorName) return "#cccccc";
 
-    // Create a temporary element to let the browser parse the color
     const tempElement = document.createElement("div");
     tempElement.style.color = colorName.toLowerCase().replace(/\s+/g, "");
     document.body.appendChild(tempElement);
@@ -31,7 +33,6 @@ export default function NewArrivalsGrid({ products }) {
     const computedColor = window.getComputedStyle(tempElement).color;
     document.body.removeChild(tempElement);
 
-    // If browser parsed it successfully, convert rgb to hex
     if (
       computedColor &&
       computedColor !== "rgb(0, 0, 0)" &&
@@ -49,7 +50,6 @@ export default function NewArrivalsGrid({ products }) {
       }
     }
 
-    // Fallback for common colors that might not parse correctly
     const colorMap = {
       "navy blue": "#000080",
       navyblue: "#000080",
@@ -71,6 +71,23 @@ export default function NewArrivalsGrid({ products }) {
 
     const normalizedColor = colorName.toLowerCase().replace(/\s+/g, "");
     return colorMap[normalizedColor] || colorName.toLowerCase();
+  };
+
+  // Handle color selection
+  const handleColorClick = (productId, variant) => {
+    setSelectedColors((prev) => ({
+      ...prev,
+      [productId]: variant.color,
+    }));
+  };
+
+  // Get the image for the selected color
+  const getSelectedImage = (product) => {
+    const selectedColor = selectedColors[product._id];
+    const selectedVariant =
+      product.variants.find((variant) => variant.color === selectedColor) ||
+      product.variants[0];
+    return selectedVariant?.images?.[0]?.url || "";
   };
 
   return (
@@ -98,85 +115,93 @@ export default function NewArrivalsGrid({ products }) {
       {data?.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
           {data?.map((product, idx) => (
-            <motion.div
-              key={product._id || idx}
-              className="group cursor-pointer"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.5 }}
-            >
-              {/* Clean Image Container */}
-              <div className="relative aspect-[4/5] mb-4 overflow-hidden bg-gray-50">
-                <img
-                  src={product.variants?.[0]?.images?.[0]?.url || ""}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-opacity duration-300"
-                />
-                <img
-                  src={
-                    product.variants?.[0]?.images?.[1]?.url ||
-                    product.variants?.[0]?.images?.[0]?.url ||
-                    ""
-                  }
-                  alt={`${product.name} Alt`}
-                  className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                />
+            <Link to={`/products/${product._id}`}>
+              <motion.div
+                key={product._id || idx}
+                className="group cursor-pointer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.5 }}
+              >
+                {/* Clean Image Container */}
+                <div className="relative aspect-[4/5] mb-4 overflow-hidden bg-gray-50">
+                  <img
+                    src={getSelectedImage(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-opacity duration-300"
+                  />
+                  <img
+                    src={
+                      product.variants?.find(
+                        (variant) =>
+                          variant.color === selectedColors[product._id]
+                      )?.images?.[1]?.url || getSelectedImage(product)
+                    }
+                    alt={`${product.name} Alt`}
+                    className="w-full h-full object-cover absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  />
 
-                {/* Simple Sale Tag */}
-                {product.tag && (
-                  <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 text-xs font-medium">
-                    {product.tag}
-                  </div>
-                )}
-              </div>
-
-              {/* Clean Product Info */}
-              <div className="space-y-3">
-                {/* Product Name */}
-                <h3 className="text-lg font-medium text-gray-900 leading-tight">
-                  {product.name}
-                </h3>
-
-                {/* Simple Pricing */}
-                <div className="flex items-center gap-3">
-                  <span className="text-lg font-medium text-gray-900">
-                    ₹{product.discountedPrice?.toLocaleString()}
-                  </span>
-                  {product.price !== product.discountedPrice && (
-                    <span className="text-sm text-gray-500 line-through">
-                      ₹{product.price?.toLocaleString()}
-                    </span>
+                  {/* Simple Sale Tag */}
+                  {product.tag && (
+                    <div className="absolute top-3 left-3 bg-black text-white px-3 py-1 text-xs font-medium">
+                      {product.tag}
+                    </div>
                   )}
                 </div>
 
-                {/* Clean Color Swatches */}
-                {product.variants && product.variants.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    {product.variants.slice(0, 5).map((variant, i) => (
-                      <div
-                        key={i}
-                        className="w-5 h-5 rounded-full border border-gray-200"
-                        style={{ backgroundColor: parseColor(variant.color) }}
-                        title={variant.color}
-                      />
-                    ))}
-                    {product.variants.length > 5 && (
-                      <span className="text-xs text-gray-500 ml-1">
-                        +{product.variants.length - 5}
+                {/* Clean Product Info */}
+                <div className="space-y-3">
+                  {/* Product Name */}
+                  <h3 className="text-lg font-medium text-gray-900 leading-tight">
+                    {product.name}
+                  </h3>
+
+                  {/* Simple Pricing */}
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-medium text-gray-900">
+                      ₹{product.discountedPrice?.toLocaleString()}
+                    </span>
+                    {product.price !== product.discountedPrice && (
+                      <span className="text-sm text-gray-500 line-through">
+                        ₹{product.price?.toLocaleString()}
                       </span>
                     )}
                   </div>
-                )}
 
-                {/* Simple Sizes */}
-                {product.size && product.size.length > 0 && (
-                  <div className="text-sm text-gray-600">
-                    {product.size.map((s) => s.toUpperCase()).join(" • ")}
-                  </div>
-                )}
-              </div>
-            </motion.div>
+                  {/* Clean Color Swatches */}
+                  {product.variants && product.variants.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      {product.variants.slice(0, 5).map((variant, i) => (
+                        <div
+                          key={i}
+                          className={`w-5 h-5 rounded-full border ${
+                            selectedColors[product._id] === variant.color
+                              ? "border-gray-900 ring-2 ring-offset-2 ring-gray-900"
+                              : "border-gray-200"
+                          } cursor-pointer`}
+                          style={{ backgroundColor: parseColor(variant.color) }}
+                          title={variant.color}
+                          onClick={() => handleColorClick(product._id, variant)}
+                        />
+                      ))}
+                      {product.variants.length > 5 && (
+                        <span className="text-xs text-gray-500 ml-1">
+                          +{product.variants.length - 5}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Simple Sizes */}
+                  {product.size && product.size.length > 0 && (
+                    <div className="text-sm text-gray-600">
+                      {product.size.map((s) => s.toUpperCase()).join(" • ")}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
       ) : (
@@ -223,8 +248,8 @@ export default function NewArrivalsGrid({ products }) {
           >
             <Link
               to="/products"
-              state={{ categoryId: products?._id }} // Pass category ID
-              className="relative inline-flex items-center px-8 py-3 text-sm font-medium text-gray-800 "
+              state={{ categoryId: products?._id }}
+              className="relative inline-flex items-center px-8 py-3 text-sm font-medium text-gray-800"
             >
               <span className="relative z-10 flex items-center gap-2">
                 View All Products
@@ -247,7 +272,6 @@ export default function NewArrivalsGrid({ products }) {
                 </motion.svg>
               </span>
 
-              {/* Subtle hover background */}
               <motion.div
                 className="absolute inset-0"
                 initial={{ opacity: 0 }}
@@ -256,7 +280,6 @@ export default function NewArrivalsGrid({ products }) {
               />
             </Link>
 
-            {/* Minimal underline accent */}
             <motion.div
               className="absolute bottom-0 left-1/2 h-px bg-gray-800"
               initial={{ width: 0, x: "-50%" }}

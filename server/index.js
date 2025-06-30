@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 // import routes
 import categorieRoutes from "./routes/categorie.route.js";
 import productRoutes from "./routes/product.route.js";
+import cartRoutes from "./routes/cart.route.js";
 
 // Configuration
 dotenv.config();
@@ -27,6 +28,7 @@ mongoose
 // Routes
 app.use("/api/categorie", categorieRoutes);
 app.use("/api/product", productRoutes);
+app.use("/api/cart", cartRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
