@@ -9,7 +9,6 @@ import {
   Plus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../Firebase";
 
 const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
@@ -24,6 +23,56 @@ const ProductDetailPage = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
   const navigate = useNavigate();
+
+  const parseColor = (colorName) => {
+    if (!colorName) return "#cccccc";
+
+    const tempElement = document.createElement("div");
+    tempElement.style.color = colorName.toLowerCase().replace(/\s+/g, "");
+    document.body.appendChild(tempElement);
+
+    const computedColor = window.getComputedStyle(tempElement).color;
+    document.body.removeChild(tempElement);
+
+    if (
+      computedColor &&
+      computedColor !== "rgb(0, 0, 0)" &&
+      colorName.toLowerCase() !== "black"
+    ) {
+      const rgbMatch = computedColor.match(/\d+/g);
+      if (rgbMatch && rgbMatch.length >= 3) {
+        const hex =
+          "#" +
+          rgbMatch
+            .slice(0, 3)
+            .map((x) => parseInt(x).toString(16).padStart(2, "0"))
+            .join("");
+        return hex;
+      }
+    }
+
+    const colorMap = {
+      "navy blue": "#000080",
+      navyblue: "#000080",
+      "light blue": "#ADD8E6",
+      lightblue: "#ADD8E6",
+      "dark blue": "#00008B",
+      darkblue: "#00008B",
+      "light green": "#90EE90",
+      lightgreen: "#90EE90",
+      "dark green": "#006400",
+      darkgreen: "#006400",
+      "light gray": "#D3D3D3",
+      lightgray: "#D3D3D3",
+      "dark gray": "#A9A9A9",
+      darkgray: "#A9A9A9",
+      "off white": "#F8F8FF",
+      offwhite: "#F8F8FF",
+    };
+
+    const normalizedColor = colorName.toLowerCase().replace(/\s+/g, "");
+    return colorMap[normalizedColor] || colorName.toLowerCase();
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -72,7 +121,6 @@ const ProductDetailPage = () => {
       alert("Please select a size");
       return;
     }
-
     setIsAddingToCart(true);
     try {
       const response = await fetch("http://localhost:5000/api/cart/create", {
@@ -85,6 +133,7 @@ const ProductDetailPage = () => {
           productId: product._id,
           quantity,
           size: selectedSize,
+          color: product.variants[selectedVariantIndex].color,
         }),
       });
 
@@ -307,7 +356,7 @@ const ProductDetailPage = () => {
                         ? "border-gray-900 ring-2 ring-offset-2 ring-gray-400 scale-110"
                         : "border-gray-300 hover:border-gray-500 hover:scale-105"
                     }`}
-                    style={{ backgroundColor: variant.color }}
+                    style={{ backgroundColor: parseColor(variant.color) }}
                   >
                     {selectedVariantIndex === index && (
                       <div className="absolute inset-0 rounded-full bg-white/20"></div>

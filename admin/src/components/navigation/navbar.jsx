@@ -39,10 +39,16 @@ const Navbar = () => {
               Users
             </Link>
             <Link
-              to="/settings"
+              to="/headers"
               className="px-4 py-2 text-slate-300 hover:text-white hover:bg-white/10 font-medium rounded-lg transition-all duration-200"
             >
-              Settings
+              Headers
+            </Link>
+            <Link
+              to="/discount"
+              className="px-4 py-2 text-slate-300 hover:text-white hover:bg-white/10 font-medium rounded-lg transition-all duration-200"
+            >
+              Discount
             </Link>
           </div>
 

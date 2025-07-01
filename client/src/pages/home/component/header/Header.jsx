@@ -1,47 +1,54 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
-const slides = [
-  {
-    image:
-      "https://images.unsplash.com/photo-1569810020669-aa9d38003ea7?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    title: "FESTIVE",
-    subtitle: "New Arrivals Just Dropped!",
-    buttonText: "Shop Indo-Westerns",
-    layout: "leftElegant",
-    accent: "COLLECTION 2025",
-  },
-  {
-    image:
-      "https://cloudfront-eu-central-1.images.arcpublishing.com/businessoffashion/MKFI57CEEBDDFEVI3FZCTRLV4I.jpg",
-    title: "ELEGANT",
-    subtitle: "TIMELESS & LUXURIOUS",
-    buttonText: "New Arrivals",
-    layout: "rightClassic",
-    accent: "PREMIUM",
-  },
-  {
-    image:
-      "https://img.damensch.com/damensch/cms-media/blog-images/summer%20clothes%20for%20men_%202024%20style%20forecast.png",
-    title: "SUMMER",
-    subtitle: "SLAY IN BREEZY COMFORT",
-    buttonText: "Shop Now",
-    layout: "centerModern",
-    accent: "HOTNESS",
-  },
-];
-
-export default function ModernHeroSlider() {
+const ModernHeroSlider = () => {
+  const [headers, setHeaders] = useState([]);
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const intervalRef = useRef(null);
 
+  // Layout options to cycle through
+  const layouts = ["leftElegant", "rightClassic", "centerModern"];
+
+  // Fetch headers from API
   useEffect(() => {
+    const fetchHeaders = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/header/");
+        if (!response.ok) throw new Error("Failed to fetch headers");
+        const data = await response.json();
+        // Map API data to slider format
+        const mappedData = data.map((header, i) => ({
+          title: header.name,
+          subtitle: header.description,
+          image: header.image,
+          accent: header.tag,
+          buttonText: "Shop Now", // Hardcoded as not provided by API
+          layout: layouts[i % layouts.length], // Cycle through layouts
+        }));
+        setHeaders(mappedData);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to load headers. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchHeaders();
+  }, []);
+
+  // Handle slider auto-progression
+  useEffect(() => {
+    if (headers.length === 0) return;
+
     const startTimer = () => {
       intervalRef.current = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
-            setIndex((i) => (i + 1) % slides.length);
+            setIndex((i) => (i + 1) % headers.length);
             return 0;
           }
           return prev + 100 / 70; // 7 seconds = 7000ms, update every 100ms
@@ -53,7 +60,7 @@ export default function ModernHeroSlider() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [index]);
+  }, [index, headers.length]);
 
   const handleDotClick = (i) => {
     setIndex(i);
@@ -61,8 +68,8 @@ export default function ModernHeroSlider() {
   };
 
   const getContentDesign = (slide, slideIndex) => {
-    switch (slideIndex) {
-      case 0: // Festive - Simple left layout
+    switch (slide.layout) {
+      case "leftElegant":
         return (
           <motion.div
             className="absolute left-16 top-1/2 -translate-y-1/2 max-w-2xl"
@@ -79,7 +86,6 @@ export default function ModernHeroSlider() {
             >
               {slide.accent}
             </motion.span>
-
             <motion.h1
               className="text-white text-6xl md:text-8xl font-bold mb-4 leading-[0.9]"
               initial={{ opacity: 0, y: 30 }}
@@ -88,7 +94,6 @@ export default function ModernHeroSlider() {
             >
               {slide.title}
             </motion.h1>
-
             <motion.p
               className="text-white/90 text-xl md:text-2xl font-light mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -97,19 +102,20 @@ export default function ModernHeroSlider() {
             >
               {slide.subtitle}
             </motion.p>
-
-            <motion.button
-              className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              {slide.buttonText}
-            </motion.button>
+            <Link to="/products">
+              <motion.button
+                className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                {slide.buttonText}
+              </motion.button>
+            </Link>
           </motion.div>
         );
 
-      case 1: // Elegant - Simple right layout
+      case "rightClassic":
         return (
           <motion.div
             className="absolute right-16 top-1/2 -translate-y-1/2 max-w-xl text-right"
@@ -126,7 +132,6 @@ export default function ModernHeroSlider() {
             >
               {slide.accent}
             </motion.span>
-
             <motion.h1
               className="text-white text-6xl md:text-8xl font-bold mb-4 leading-[0.9]"
               initial={{ opacity: 0, y: 30 }}
@@ -135,7 +140,6 @@ export default function ModernHeroSlider() {
             >
               {slide.title}
             </motion.h1>
-
             <motion.p
               className="text-white/90 text-xl md:text-2xl font-light mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -144,19 +148,20 @@ export default function ModernHeroSlider() {
             >
               {slide.subtitle}
             </motion.p>
-
-            <motion.button
-              className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              {slide.buttonText}
-            </motion.button>
+            <Link to="/products">
+              <motion.button
+                className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                {slide.buttonText}
+              </motion.button>
+            </Link>
           </motion.div>
         );
 
-      case 2: // Summer - Simple center layout
+      case "centerModern":
         return (
           <motion.div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center max-w-2xl"
@@ -173,7 +178,6 @@ export default function ModernHeroSlider() {
             >
               {slide.accent}
             </motion.span>
-
             <motion.h1
               className="text-white text-6xl md:text-8xl font-bold mb-4 leading-[0.9]"
               initial={{ opacity: 0, y: 30 }}
@@ -182,7 +186,6 @@ export default function ModernHeroSlider() {
             >
               {slide.title}
             </motion.h1>
-
             <motion.p
               className="text-white/90 text-xl md:text-2xl font-light mb-8"
               initial={{ opacity: 0, y: 20 }}
@@ -191,15 +194,16 @@ export default function ModernHeroSlider() {
             >
               {slide.subtitle}
             </motion.p>
-
-            <motion.button
-              className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              {slide.buttonText}
-            </motion.button>
+            <Link to="/products">
+              <motion.button
+                className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                {slide.buttonText}
+              </motion.button>
+            </Link>
           </motion.div>
         );
 
@@ -208,6 +212,63 @@ export default function ModernHeroSlider() {
     }
   };
 
+  if (loading) {
+    return (
+      <section className="relative w-full h-screen flex items-center justify-center bg-gray-900">
+        <div className="flex items-center space-x-3">
+          <svg className="animate-spin h-8 w-8 text-white" viewBox="0 0 24 24">
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v8z"
+            />
+          </svg>
+          <span className="text-white text-lg">Loading headers...</span>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="relative w-full h-screen flex items-center justify-center bg-gray-900">
+        <div className="p-4 bg-red-100 text-red-700 rounded-lg flex items-center">
+          <svg
+            className="w-6 h-6 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          {error}
+        </div>
+      </section>
+    );
+  }
+
+  if (headers.length === 0) {
+    return (
+      <section className="relative w-full h-screen flex items-center justify-center bg-gray-900">
+        <div className="text-white text-lg">No headers available.</div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative w-full h-screen overflow-hidden bg-black">
       {/* Background slider */}
@@ -215,7 +276,7 @@ export default function ModernHeroSlider() {
         className="absolute inset-0 flex transition-transform duration-1000 ease-out"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {slides.map((slide, i) => (
+        {headers.map((slide, i) => (
           <div key={i} className="w-full h-full relative flex-shrink-0">
             <div className="absolute inset-0 bg-black/20 z-10" />
             <img
@@ -230,17 +291,18 @@ export default function ModernHeroSlider() {
       {/* Content overlay */}
       <div className="absolute inset-0 z-20">
         <AnimatePresence mode="wait">
-          {getContentDesign(slides[index], index)}
+          {getContentDesign(headers[index], index)}
         </AnimatePresence>
       </div>
 
       {/* Enhanced navigation */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4">
-        {slides.map((_, i) => (
+        {headers.map((_, i) => (
           <button
             key={i}
             onClick={() => handleDotClick(i)}
             className="group relative"
+            aria-label={`Go to slide ${i + 1}`}
           >
             <div
               className={`h-1 rounded-full transition-all duration-300 ${
@@ -263,4 +325,6 @@ export default function ModernHeroSlider() {
       </div>
     </section>
   );
-}
+};
+
+export default ModernHeroSlider;

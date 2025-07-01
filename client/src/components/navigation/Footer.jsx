@@ -72,27 +72,6 @@ const Footer = () => {
             </div>
           </div>
         </div>
-
-        {/* Newsletter */}
-        <div>
-          <h3 className="text-xl font-semibold mb-4 text-white">Newsletter</h3>
-          <p className="text-sm text-gray-400 mb-4">
-            Subscribe to get updates, style tips, and special offers.
-          </p>
-          <form className="flex items-center bg-gray-800 rounded-lg overflow-hidden">
-            <input
-              type="email"
-              placeholder="Your email"
-              className="flex-1 px-4 py-2 text-sm bg-transparent focus:outline-none text-white placeholder-gray-400"
-            />
-            <button
-              type="submit"
-              className="bg-orange-500 hover:bg-orange-600 px-4 py-2 text-sm font-medium text-white"
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
       </div>
 
       {/* Footer Bottom */}

@@ -94,7 +94,7 @@ export default function NewArrivalsGrid({ products }) {
     <section className="w-full mx-auto py-16 px-4">
       {/* Minimal Header */}
       <motion.div
-        className="text-center mb-16"
+        className="text-center mb-16 p-7"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
