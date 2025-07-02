@@ -45,7 +45,6 @@ const productSchema = new mongoose.Schema({
   },
   tag: {
     type: String,
-    enum: ["New", "Trending", "Sale", ""],
     default: "",
   },
 });

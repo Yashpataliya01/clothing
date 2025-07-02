@@ -10,10 +10,8 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("Checking Firebase auth:", auth); // Debug: Verify auth object
     const unsubscribe = auth.onAuthStateChanged(
       (currentUser) => {
-        console.log("Auth state changed:", currentUser); // Debug: Log auth state
         if (currentUser) {
           const storedUser = JSON.parse(localStorage.getItem("user"));
           setUser(
@@ -41,10 +39,8 @@ export default function Navbar() {
   const handleLogout = async (e) => {
     e.preventDefault(); // Prevent any default behavior
     e.stopPropagation(); // Stop event bubbling
-    console.log("Logout clicked"); // Debug: Confirm function is called
     try {
       await signOut(auth);
-      console.log("Sign out successful");
       localStorage.removeItem("user");
       setUser(null);
       setDropdownOpen(false);
@@ -58,7 +54,6 @@ export default function Navbar() {
   const handleUserClick = (e) => {
     e.preventDefault(); // Prevent any default link behavior
     e.stopPropagation(); // Stop event bubbling
-    console.log("User icon clicked, user:", user); // Debug: Confirm user click
     if (user) {
       setDropdownOpen((prev) => !prev); // Toggle dropdown
     } else {

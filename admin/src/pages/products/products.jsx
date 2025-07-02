@@ -3,11 +3,14 @@ import { useLocation, useParams } from "react-router-dom";
 
 const Products = () => {
   const { id } = useParams();
-  const location = useLocation();
-  const category = location.state?.category;
-
+  const { state: { category } = {} } = useLocation();
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const initialFormState = {
     name: "",
     description: "",
     price: "",
@@ -16,239 +19,195 @@ const Products = () => {
     variants: [{ color: "", images: [] }],
     size: [],
     tag: "",
-  });
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [editId, setEditId] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  };
 
-  // Cloudinary configuration
-  const CLOUDINARY_UPLOAD_PRESET = "bg8efuux";
-  const CLOUDINARY_CLOUD_NAME = "dlyq8wjky";
-  const CLOUDINARY_API_KEY = "683781286465483";
-  const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+  const [form, setForm] = useState(initialFormState);
 
-  // Tag options
-  const tagOptions = [
-    { value: "", label: "None" },
-    { value: "New", label: "New" },
-    { value: "Trending", label: "Trending" },
-    { value: "Sale", label: "Sale" },
-  ];
+  const CLOUDINARY_CONFIG = {
+    UPLOAD_PRESET: "bg8efuux",
+    CLOUD_NAME: "dlyq8wjky",
+    API_KEY: "683781286465483",
+    UPLOAD_URL: `https://api.cloudinary.com/v1_1/dlyq8wjky/image/upload`,
+  };
 
-  async function fetchProducts() {
-    if (!category?._id) return;
+  const tagOptions = ["", "New", "Trending", "Sale"];
 
+  useEffect(() => {
+    if (category?._id) fetchProducts();
+  }, [category]);
+
+  const fetchProducts = async () => {
     try {
       const res = await fetch(
         `http://localhost:5000/api/product?category=${category._id}`
       );
-      const data = await res.json();
-      setProducts(data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
+      if (!res.ok) throw new Error("Failed to fetch products");
+      setProducts(await res.json());
+    } catch (err) {
+      console.error("Fetch error:", err);
     }
-  }
-
-  useEffect(() => {
-    fetchProducts();
-  }, [category]);
+  };
 
   const uploadImageToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-    formData.append("api_key", CLOUDINARY_API_KEY);
-
+    formData.append("upload_preset", CLOUDINARY_CONFIG.UPLOAD_PRESET);
+    formData.append("api_key", CLOUDINARY_CONFIG.API_KEY);
     try {
-      const res = await fetch(CLOUDINARY_UPLOAD_URL, {
+      const res = await fetch(CLOUDINARY_CONFIG.UPLOAD_URL, {
         method: "POST",
         body: formData,
       });
       const data = await res.json();
-      if (data.secure_url) {
+      if (data.secure_url)
         return { url: data.secure_url, publicId: data.public_id };
-      } else {
-        throw new Error("Image upload failed");
-      }
+      throw new Error("Image upload failed");
     } catch (err) {
-      console.error("Error uploading image to Cloudinary:", err);
+      console.error("Error uploading image:", err);
       throw err;
     }
   };
 
-  const deleteImageFromCloudinary = async (publicId) => {
+  const deleteImageFromBackend = async (productId, publicId) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/products/delete-image",
+        "http://localhost:5000/api/product/delete-image",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ publicId }),
+          body: JSON.stringify({ productId, publicId }),
         }
       );
-      if (!res.ok) throw new Error("Failed to delete image from Cloudinary");
+      if (!res.ok) throw new Error("Failed to remove image from product");
     } catch (err) {
-      console.error("Error deleting image from Cloudinary:", err);
+      console.error("Error removing image:", err);
+      throw err;
     }
   };
 
   const openModal = (prod = null) => {
-    if (prod) {
-      setForm({
-        name: prod.name,
-        description: prod.description,
-        price: prod.price.toString(),
-        discountedPrice: prod.discountedPrice?.toString() || "",
-        category: category?._id || "",
-        variants: prod.variants.map((variant) => ({
-          color: variant.color,
-          images: variant.images.map((img) => ({
-            url: img.url || img,
-            publicId: img.publicId || null,
-          })),
-        })),
-        size: prod.size,
-        tag: prod.tag || "",
-      });
-      setEditMode(true);
-      setEditId(prod._id);
-    } else {
-      setForm({
-        name: "",
-        description: "",
-        price: "",
-        discountedPrice: "",
-        category: category?._id || "",
-        variants: [{ color: "", images: [] }],
-        size: [],
-        tag: "",
-      });
-      setEditMode(false);
-      setEditId(null);
-    }
+    setForm(
+      prod
+        ? {
+            name: prod.name,
+            description: prod.description,
+            price: prod.price.toString(),
+            discountedPrice: prod.discountedPrice?.toString() || "",
+            category: category?._id || "",
+            variants: prod.variants.map((v) => ({
+              color: v.color,
+              images: v.images.map((img) => ({
+                url: img.url || img,
+                publicId: img.publicId || null,
+              })),
+            })),
+            size: prod.size,
+            tag: prod.tag || "",
+          }
+        : initialFormState
+    );
+    setEditMode(!!prod);
+    setEditId(prod?._id || null);
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
-    setForm({
-      name: "",
-      description: "",
-      price: "",
-      discountedPrice: "",
-      category: category?._id || "",
-      variants: [{ color: "", images: [] }],
-      size: [],
-      tag: "",
-    });
+    setForm(initialFormState);
     setEditMode(false);
     setEditId(null);
     setIsLoading(false);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
-  };
+  const handleChange = (e) =>
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleVariantChange = (index, field, value) => {
-    const newVariants = [...form.variants];
-    if (field === "color") {
-      newVariants[index].color = value;
-    } else if (field === "image") {
-      newVariants[index].images = [
-        ...newVariants[index].images,
+    const updatedVariants = [...form.variants];
+    if (field === "color") updatedVariants[index].color = value;
+    else if (field === "image")
+      updatedVariants[index].images = [
+        ...updatedVariants[index].images,
         ...Array.from(value),
       ];
-    }
-    setForm({ ...form, variants: newVariants });
+    setForm((prev) => ({ ...prev, variants: updatedVariants }));
   };
 
-  const handleSizeChange = (value) => {
-    const sizes = value
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s);
-    setForm({ ...form, size: sizes });
-  };
+  const handleSizeChange = (e) =>
+    setForm((prev) => ({
+      ...prev,
+      size: e.target.value
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s),
+    }));
 
-  const addVariant = () => {
-    setForm({
-      ...form,
-      variants: [...form.variants, { color: "", images: [] }],
-    });
-  };
+  const addVariant = () =>
+    setForm((prev) => ({
+      ...prev,
+      variants: [...prev.variants, { color: "", images: [] }],
+    }));
 
   const removeVariant = (index) => {
-    const newVariants = form.variants.filter((_, i) => i !== index);
+    const updated = form.variants.filter((_, i) => i !== index);
     setForm({
       ...form,
-      variants:
-        newVariants.length > 0 ? newVariants : [{ color: "", images: [] }],
+      variants: updated.length ? updated : [{ color: "", images: [] }],
     });
   };
 
-  const removeImage = (variantIndex, imageIndex) => {
-    const newVariants = [...form.variants];
-    newVariants[variantIndex].images = newVariants[variantIndex].images.filter(
-      (_, i) => i !== imageIndex
-    );
-    setForm({ ...form, variants: newVariants });
+  const removeImage = async (variantIndex, imgIndex) => {
+    const updatedVariants = [...form.variants];
+    const image = updatedVariants[variantIndex].images[imgIndex];
+    if (editMode && image.publicId)
+      await deleteImageFromBackend(editId, image.publicId);
+    updatedVariants[variantIndex].images.splice(imgIndex, 1);
+    setForm({ ...form, variants: updatedVariants });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
-      // Process variants for Cloudinary upload
       const processedVariants = await Promise.all(
         form.variants.map(async (variant) => {
           const uploadedImages = await Promise.all(
             variant.images.map(async (image) => {
-              if (typeof image === "string" && image.startsWith("http")) {
+              if (typeof image === "string" && image.startsWith("http"))
                 return {
                   url: image,
                   publicId:
                     variant.images.find((img) => img.url === image)?.publicId ||
                     null,
                 };
-              }
-              const result = await uploadImageToCloudinary(image);
-              return result;
+              if (image instanceof File)
+                return await uploadImageToCloudinary(image);
+              return image;
             })
           );
           return { color: variant.color, images: uploadedImages };
         })
       );
 
-      // Delete old images in edit mode
       if (editMode) {
-        const existingProduct = products.find((p) => p._id === editId);
-        const oldImagePublicIds = existingProduct.variants
+        const existing = products.find((p) => p._id === editId);
+        const existingIds = existing.variants
           .flatMap((v) => v.images.map((img) => img.publicId))
-          .filter(
-            (id) =>
-              id &&
-              !processedVariants.some((v) =>
-                v.images.some((img) => img.publicId === id)
-              )
-          );
+          .filter(Boolean);
+        const currentIds = processedVariants
+          .flatMap((v) => v.images.map((img) => img.publicId))
+          .filter(Boolean);
+        const removed = existingIds.filter((id) => !currentIds.includes(id));
         await Promise.all(
-          oldImagePublicIds.map((publicId) =>
-            deleteImageFromCloudinary(publicId)
-          )
+          removed.map((publicId) => deleteImageFromBackend(editId, publicId))
         );
       }
 
       const url = editMode
         ? `http://localhost:5000/api/product/update/${editId}`
         : "http://localhost:5000/api/product/create";
-      const method = editMode ? "PUT" : "POST";
-
       const response = await fetch(url, {
-        method,
+        method: editMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
@@ -260,11 +219,10 @@ const Products = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to save product");
-      }
-
+      if (!response.ok)
+        throw new Error(
+          (await response.json()).message || "Failed to save product"
+        );
       closeModal();
       fetchProducts();
     } catch (error) {
@@ -276,17 +234,14 @@ const Products = () => {
 
   const handleDelete = async (id) => {
     try {
-      const product = products.find((p) => p._id === id);
-      const publicIds = product.variants
-        .flatMap((v) => v.images.map((img) => img.publicId))
-        .filter((id) => id);
-      await Promise.all(
-        publicIds.map((publicId) => deleteImageFromCloudinary(publicId))
+      const response = await fetch(
+        `http://localhost:5000/api/product/delete/${id}`,
+        { method: "DELETE" }
       );
-
-      await fetch(`http://localhost:5000/api/product/delete/${id}`, {
-        method: "DELETE",
-      });
+      if (!response.ok)
+        throw new Error(
+          (await response.json()).message || "Failed to delete product"
+        );
       fetchProducts();
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -294,19 +249,19 @@ const Products = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 font-sans">
-      <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+    <div className="container mx-auto p-4 sm:p-6 font-sans">
+      <h2 className="text-2xl sm:text-3xl font-bold text-center mb-6 sm:mb-8 text-gray-800">
         {category?.name} Products
       </h2>
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center mb-4 sm:mb-6">
         <button
           onClick={() => openModal()}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-6 py-2 rounded-md text-sm sm:text-base"
         >
           + Add Product
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {products.map((prod) => (
           <div
             key={prod._id}
@@ -320,30 +275,31 @@ const Products = () => {
             <img
               src={
                 prod.variants[0]?.images[0]?.url ||
-                prod.variants[0]?.images[0] ||
                 "https://via.placeholder.com/150"
               }
               alt={prod.name}
-              className="w-full h-48 object-cover"
+              className="w-full h-40 sm:h-48 object-cover"
             />
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">
                 {prod.name}
               </h3>
-              <p className="text-sm text-gray-500 mb-2">{prod.description}</p>
-              <p className="text-gray-900 font-bold">
-                ₹{prod.discountedPrice ? prod.discountedPrice : prod.price}
+              <p className="text-xs sm:text-sm text-gray-500 mb-2 truncate">
+                {prod.description}
+              </p>
+              <p className="text-gray-900 font-bold text-sm sm:text-base">
+                ₹{prod.discountedPrice || prod.price}
                 {prod.discountedPrice && (
-                  <span className="line-through text-gray-500 ml-2">
+                  <span className="line-through text-gray-500 ml-2 text-xs sm:text-sm">
                     ₹{prod.price}
                   </span>
                 )}
               </p>
-              <div className="mt-2 space-x-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {prod.variants.map((v) => (
                   <span
                     key={v.color}
-                    className="inline-block px-2 py-0.5 bg-gray-200 text-gray-800 rounded"
+                    className="inline-block px-2 py-0.5 bg-gray-200 text-gray-800 rounded text-xs"
                   >
                     {v.color}
                   </span>
@@ -352,13 +308,13 @@ const Products = () => {
               <div className="flex justify-between mt-4">
                 <button
                   onClick={() => openModal(prod)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 sm:px-4 py-1 rounded text-xs sm:text-sm"
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(prod._id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+                  className="bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-1 rounded text-xs sm:text-sm"
                 >
                   Delete
                 </button>
@@ -367,20 +323,19 @@ const Products = () => {
           </div>
         ))}
       </div>
-
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 overflow-y-auto py-4">
-          <div className="bg-white w-full max-w-lg p-6 rounded-lg shadow-xl relative">
-            <h3 className="text-2xl font-bold mb-4">
+          <div className="bg-white w-full max-w-md sm:max-w-lg p-4 sm:p-6 rounded-lg shadow-xl">
+            <h3 className="text-xl sm:text-2xl font-bold mb-4">
               {editMode ? "Edit Product" : "Add Product"}
             </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
               <input
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Name"
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full text-sm sm:text-base"
                 required
               />
               <textarea
@@ -388,55 +343,47 @@ const Products = () => {
                 value={form.description}
                 onChange={handleChange}
                 placeholder="Description"
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full text-sm sm:text-base"
                 required
               />
               <input
                 name="price"
+                type="number"
                 value={form.price}
                 onChange={handleChange}
                 placeholder="Price"
-                type="number"
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full text-sm sm:text-base"
                 required
               />
               <input
                 name="discountedPrice"
+                type="number"
                 value={form.discountedPrice}
                 onChange={handleChange}
                 placeholder="Discounted Price"
-                type="number"
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full text-sm sm:text-base"
               />
               <input
                 name="size"
-                autoComplete="off"
                 value={form.size.join(",")}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setForm({
-                    ...form,
-                    size: value.split(",").map((s) => s.trim()),
-                  });
-                }}
+                onChange={handleSizeChange}
                 placeholder="Sizes (comma-separated)"
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full text-sm sm:text-base"
               />
-
               <select
                 name="tag"
                 value={form.tag}
                 onChange={handleChange}
-                className="border p-2 rounded w-full"
+                className="border p-2 rounded w-full text-sm sm:text-base"
               >
-                {tagOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
+                {tagOptions.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag || "None"}
                   </option>
                 ))}
               </select>
               {form.variants.map((variant, index) => (
-                <div key={index} className="space-y-2">
+                <div key={index} className="space-y-2 border p-2 rounded">
                   <input
                     type="text"
                     value={variant.color}
@@ -444,34 +391,36 @@ const Products = () => {
                       handleVariantChange(index, "color", e.target.value)
                     }
                     placeholder="Color"
-                    className="border p-2 rounded w-full"
+                    className="border p-2 rounded w-full text-sm sm:text-base"
                     required
                   />
                   <input
                     type="file"
-                    accept="image/*"
                     multiple
+                    accept="image/*"
                     onChange={(e) =>
                       handleVariantChange(index, "image", e.target.files)
                     }
-                    className="border p-2 rounded w-full"
+                    className="border p-2 rounded w-full text-sm sm:text-base"
                     required={!editMode || !variant.images.length}
                   />
                   {variant.images.length > 0 && (
                     <div className="space-y-1">
-                      <p className="text-sm text-gray-600">Uploaded Images:</p>
-                      {variant.images.map((img, imgIndex) => (
+                      <p className="text-xs sm:text-sm text-gray-600">
+                        Uploaded Images:
+                      </p>
+                      {variant.images.map((img, i) => (
                         <div
-                          key={imgIndex}
-                          className="flex items-center space-x-2"
+                          key={i}
+                          className="flex justify-between text-xs sm:text-sm"
                         >
-                          <span className="text-sm text-gray-600">
-                            {typeof img === "string" ? img : img.name}
+                          <span className="truncate">
+                            {img.name || img.url}
                           </span>
                           <button
                             type="button"
-                            onClick={() => removeImage(index, imgIndex)}
-                            className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                            onClick={() => removeImage(index, i)}
+                            className="text-red-600"
                           >
                             Remove
                           </button>
@@ -479,16 +428,11 @@ const Products = () => {
                       ))}
                     </div>
                   )}
-                  {editMode && variant.images.length > 0 && (
-                    <p className="text-sm text-gray-600">
-                      Current images will be kept unless new ones are uploaded
-                    </p>
-                  )}
                   {form.variants.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeVariant(index)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded"
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 sm:px-4 py-1 rounded text-xs sm:text-sm"
                     >
                       Remove Variant
                     </button>
@@ -498,25 +442,29 @@ const Products = () => {
               <button
                 type="button"
                 onClick={addVariant}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-1 rounded text-xs sm:text-sm"
               >
-                Add Variant
+                + Add Variant
               </button>
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end gap-2 pt-4">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="bg-gray-300 px-4 py-2 rounded"
+                  className="bg-gray-300 px-3 sm:px-4 py-2 rounded text-xs sm:text-sm"
                   disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded"
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 sm:px-6 py-2 rounded text-xs sm:text-sm"
                   disabled={isLoading}
                 >
-                  {isLoading ? "Saving..." : editMode ? "Update" : "Create"}
+                  {isLoading
+                    ? "Saving..."
+                    : editMode
+                    ? "Update Product"
+                    : "Create Product"}
                 </button>
               </div>
             </form>

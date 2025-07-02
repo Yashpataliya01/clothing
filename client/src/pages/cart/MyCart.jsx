@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { ShoppingCart, X, Minus, Plus, Bookmark } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +17,9 @@ const MyCart = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [isSummaryOpen, setIsSummaryOpen] = useState(true);
   const [savedItems, setSavedItems] = useState([]);
-  const [sizeUpdateError, setSizeUpdateError] = useState(null); // New state for size-specific errors
+  const [sizeUpdateError, setSizeUpdateError] = useState(null);
+  const [discounts, setDiscounts] = useState([]);
+  const [appliedDiscount, setAppliedDiscount] = useState(null);
   const debounceTimeout = useRef(null);
 
   const parseColor = (colorName) => {
@@ -78,7 +86,7 @@ const MyCart = () => {
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "Failed to fetch cart");
       setCart(json.cart);
-      setSizeUpdateError(null); // Clear size update error on successful fetch
+      setSizeUpdateError(null);
     } catch (err) {
       console.error("Fetch cart error:", err);
       setError(err.message);
@@ -87,9 +95,22 @@ const MyCart = () => {
     }
   }, []);
 
+  const fetchDiscounts = useCallback(async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/discounts/`);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.message || "Failed to fetch discounts");
+      setDiscounts(json.data);
+    } catch (err) {
+      console.error("Fetch discounts error:", err);
+      setError(err.message);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCart();
-  }, [fetchCart]);
+    fetchDiscounts();
+  }, [fetchCart, fetchDiscounts]);
 
   const updateCartItem = async (cartId, productId, quantity, size, color) => {
     try {
@@ -107,12 +128,12 @@ const MyCart = () => {
         throw new Error(json.message || "Failed to update cart");
       }
       setCart(json.cart);
-      setSizeUpdateError(null); // Clear error on success
+      setSizeUpdateError(null);
     } catch (err) {
       console.error("Update cart error:", err);
       setError(err.message || "Update failed");
       if (err.message.includes("size")) {
-        setSizeUpdateError(err.message); // Set specific error for size
+        setSizeUpdateError(err.message);
       }
     } finally {
       setUpdating((prev) => ({ ...prev, [productId + size]: false }));
@@ -160,7 +181,6 @@ const MyCart = () => {
       (p) => p.product._id === productId && p.size === oldSize
     );
     if (item && newSize !== oldSize) {
-      // Validate new size against product sizes
       const isValidSize = item.product.size.includes(newSize);
       if (!isValidSize) {
         setSizeUpdateError(
@@ -191,19 +211,40 @@ const MyCart = () => {
         })),
       }));
       setDiscountCode("");
+      setAppliedDiscount({ code: "SAVE10", discountPercent: 10 });
       alert("Discount applied successfully!");
     } else {
       alert("Invalid discount code");
     }
   };
 
-  const subtotal =
-    cart?.products?.reduce(
+  const { subtotal, discountAmount, applicableDiscount } = useMemo(() => {
+    if (!cart?.products)
+      return { subtotal: 0, discountAmount: 0, applicableDiscount: null };
+
+    let rawSubtotal = cart.products.reduce(
       (sum, item) =>
         sum +
         (item.product.discountedPrice || item.product.price) * item.quantity,
       0
-    ) || 0;
+    );
+
+    // Find the highest applicable discount based on API data
+    let applicableDiscount = discounts
+      .filter((d) => rawSubtotal >= d.price)
+      .sort((a, b) => b.price - a.price)[0]; // Highest threshold first
+
+    let discountAmount = applicableDiscount
+      ? (applicableDiscount.discountPercent / 100) * rawSubtotal
+      : 0;
+
+    return {
+      subtotal: rawSubtotal - discountAmount,
+      discountAmount,
+      applicableDiscount,
+    };
+  }, [cart, discounts]);
+
   const totalItems =
     cart?.products?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   const minOrderValue = 1000;
@@ -280,7 +321,7 @@ const MyCart = () => {
                 transition={{ duration: 0.4, delay: idx * 0.1 }}
               >
                 <button
-                  className="absolute top-4 right-4 p-1 text-gray-500 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute top-4 right-4 p-1 text-gray-500 bg-gray-50 hover:text-red-600 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
                   onClick={() =>
                     deleteCartItem(cart._id, item.product._id, item.size)
                   }
@@ -343,15 +384,6 @@ const MyCart = () => {
                         title={`Color: ${item.color}`}
                       ></div>
                     </div>
-                    <motion.div
-                      className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white p-2 rounded-lg shadow-md"
-                      style={{ zIndex: 10 }}
-                    >
-                      <p className="text-xs text-gray-600">
-                        Stock: 15 available
-                      </p>
-                      <p className="text-xs text-gray-600">Category: Apparel</p>
-                    </motion.div>
                     <div className="flex gap-4 items-center mb-4">
                       <div>
                         <label
@@ -489,42 +521,48 @@ const MyCart = () => {
                   className="space-y-4"
                 >
                   <div className="mb-4">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value)}
-                        placeholder="Enter discount code"
-                        className="w-full border border-gray-300 rounded-md px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 pr-10"
-                        aria-label="Discount code input"
-                      />
-                      <motion.button
-                        onClick={applyDiscount}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-teal-500 text-white px-3 py-1 rounded-md text-sm hover:bg-teal-600 transition-colors"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label="Apply discount"
-                      >
-                        Apply
-                      </motion.button>
-                    </div>
-                    {discountCode && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-sm text-green-600 mt-2"
-                      >
-                        Applying discount...
-                      </motion.p>
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                      Available Discounts
+                    </h3>
+                    {discounts.length > 0 ? (
+                      <ul className="space-y-2">
+                        {discounts.map((discount) => (
+                          <li
+                            key={discount._id}
+                            className="text-xs text-gray-600"
+                          >
+                            {discount.discountPercent}% off on orders of ₹
+                            {discount.price.toLocaleString()} or more
+                            {applicableDiscount?.price === discount.price &&
+                              discountAmount > 0 && (
+                                <span className="ml-2 text-green-600 font-medium">
+                                  (Applied)
+                                </span>
+                              )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-gray-500">
+                        No discounts available
+                      </p>
                     )}
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between text-gray-600">
                       <span>Subtotal</span>
                       <span className="font-medium">
-                        ₹{subtotal.toLocaleString()}
+                        ₹{(subtotal + discountAmount).toLocaleString()}
                       </span>
                     </div>
+                    {discountAmount > 0 && (
+                      <div className="flex justify-between text-gray-600">
+                        <span>Discount</span>
+                        <span className="text-green-600 font-medium">
+                          -₹{discountAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-gray-600">
                       <span>Shipping</span>
                       <span className="text-green-600 font-medium">FREE</span>

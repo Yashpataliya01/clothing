@@ -8,6 +8,10 @@ import ProductGrid from "./components/ProductGrid";
 import FilterBar from "./components/FilterBar";
 
 const ProductsPage = () => {
+  const location = useLocation();
+  const categoryId = location.state?.categoryId || null;
+  const initialTag = location.state?.tags || null;
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,7 +19,7 @@ const ProductsPage = () => {
     size: [],
     colors: [],
     gender: [],
-    tags: [],
+    tags: initialTag ? [initialTag] : [], // Initialize tags with initialTag
     minPrice: "",
     maxPrice: "",
   });
@@ -30,9 +34,6 @@ const ProductsPage = () => {
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
-
-  const location = useLocation();
-  const categoryId = location.state?.categoryId;
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -49,18 +50,17 @@ const ProductsPage = () => {
         queryParams.append("tags", filters.tags.join(","));
       if (filters.minPrice) queryParams.append("minPrice", filters.minPrice);
       if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice);
-
-      console.log("Query Params:", queryParams.toString());
       const res = await fetch(
         `http://localhost:5000/api/product?${queryParams}`
       );
-      if (!res.ok) throw new Error("Failed to fetch products");
+      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
       const data = await res.json();
-      console.log("API Response:", data);
-      setProducts(data);
+      setProducts(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
+      console.error("Fetch error:", err);
       setError(err.message);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ const ProductsPage = () => {
     const sizes = new Set();
     const colors = new Set();
     const genders = new Set();
-    const tags = new Set();
+    const tags = new Set(initialTag ? [initialTag] : []); // Include initialTag in tags
 
     products.forEach((product) => {
       if (product.size && Array.isArray(product.size)) {
@@ -100,9 +100,8 @@ const ProductsPage = () => {
       genders: Array.from(genders).sort(),
       tags: Array.from(tags).sort(),
     };
-    console.log("Filter Options:", options);
     return options;
-  }, [products]);
+  }, [products, initialTag]);
 
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...products];
@@ -150,7 +149,7 @@ const ProductsPage = () => {
       size: [],
       colors: [],
       gender: [],
-      tags: [],
+      tags: initialTag ? [initialTag] : [], // Preserve initialTag on clear
       minPrice: "",
       maxPrice: "",
     });

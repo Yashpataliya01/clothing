@@ -8,8 +8,6 @@ export default function NewArrivalsGrid({ products }) {
   // State to track selected color for each product
   const [selectedColors, setSelectedColors] = useState({});
 
-  console.log(data, "data");
-
   const getProductdata = async () => {
     const res = await fetch(
       `http://localhost:5000/api/product?category=${products?._id}`
