@@ -172,7 +172,7 @@ const HeaderSection = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Header Management</h1>
-        {headers.length < 3 && (
+        {headers.length < 4 && (
           <button
             onClick={() => setModalOpen(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"

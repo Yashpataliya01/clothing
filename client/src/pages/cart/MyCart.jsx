@@ -6,20 +6,18 @@ import React, {
   useMemo,
 } from "react";
 import { ShoppingCart, X, Minus, Plus, Bookmark } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 const MyCart = () => {
+  const navigate = useNavigate();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState({});
-  const [discountCode, setDiscountCode] = useState("");
   const [isSummaryOpen, setIsSummaryOpen] = useState(true);
-  const [savedItems, setSavedItems] = useState([]);
   const [sizeUpdateError, setSizeUpdateError] = useState(null);
   const [discounts, setDiscounts] = useState([]);
-  const [appliedDiscount, setAppliedDiscount] = useState(null);
   const debounceTimeout = useRef(null);
 
   const parseColor = (colorName) => {
@@ -198,26 +196,6 @@ const MyCart = () => {
     }
   };
 
-  const applyDiscount = async () => {
-    if (discountCode.toLowerCase() === "SAVE10") {
-      setCart((prev) => ({
-        ...prev,
-        products: prev.products.map((item) => ({
-          ...item,
-          product: {
-            ...item.product,
-            discountedPrice: item.product.price * 0.9,
-          },
-        })),
-      }));
-      setDiscountCode("");
-      setAppliedDiscount({ code: "SAVE10", discountPercent: 10 });
-      alert("Discount applied successfully!");
-    } else {
-      alert("Invalid discount code");
-    }
-  };
-
   const { subtotal, discountAmount, applicableDiscount } = useMemo(() => {
     if (!cart?.products)
       return { subtotal: 0, discountAmount: 0, applicableDiscount: null };
@@ -262,21 +240,7 @@ const MyCart = () => {
       </div>
     );
 
-  if (error)
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="text-red-500 mb-4">⚠️</div>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchCart}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
+  if (error) navigate("/login");
 
   if (!cart?.products?.length)
     return (
@@ -626,38 +590,6 @@ const MyCart = () => {
             </AnimatePresence>
           </div>
         </div>
-
-        {savedItems.length > 0 && (
-          <div className="mt-8 bg-white rounded-2xl shadow-md border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Saved for Later ({savedItems.length})
-            </h3>
-            <div className="space-y-4">
-              {savedItems.map((item, idx) => (
-                <div
-                  key={`${item.product._id}-${item.size}`}
-                  className="flex items-center gap-4 p-2"
-                >
-                  <img
-                    src={
-                      item.product.variants?.[0]?.images?.[0]?.url ||
-                      "https://via.placeholder.com/60"
-                    }
-                    alt={item.product.name}
-                    className="w-16 h-16 object-cover rounded-md"
-                    loading="lazy"
-                  />
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-900">
-                      {item.product.name}
-                    </h4>
-                    <p className="text-xs text-gray-600">Size: {item.size}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -3,6 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Menu, X, User } from "lucide-react";
 import { auth, signOut } from "../../firebase";
 
+// import logo
+import Logo from "../../assets/home/mainlogo.png";
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
@@ -83,9 +86,7 @@ export default function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="text-2xl font-bold text-gray-900 tracking-wide">
-          Logo
-        </div>
+        <img src={Logo} alt="" className="w-18 h-18" />
 
         {/* Desktop Nav */}
         <div className="hidden md:flex space-x-8 items-center">
@@ -151,6 +152,7 @@ export default function Navbar() {
           {navLinks.map((link) => (
             <Link
               key={link.name}
+              onClick={() => setMobileMenuOpen(false)}
               to={link.link}
               className="block text-gray-700 hover:text-black text-lg font-medium"
             >
