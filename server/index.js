@@ -10,6 +10,7 @@ import productRoutes from "./routes/product.route.js";
 import cartRoutes from "./routes/cart.route.js";
 import headerRoutes from "./routes/header.route.js";
 import discountRoutes from "./routes/discount.route.js";
+import UserRoute from "./routes/user.route.js";
 
 // Configuration
 dotenv.config();
@@ -33,6 +34,7 @@ app.use("/api/product", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/header", headerRoutes);
 app.use("/api/discounts", discountRoutes);
+app.use("/api/users", UserRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

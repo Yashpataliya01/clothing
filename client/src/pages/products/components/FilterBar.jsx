@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronDown } from "lucide-react";
 
 const FilterBar = ({ setIsFilterModalOpen, setIsSortModalOpen }) => (
-  <div className="lg:hidden border-b border-gray-200 py-4 sticky top-0 bg-gray-50 z-10">
+  <div className="lg:hidden py-4 sticky top-0 z-10">
     <div className="flex items-center justify-between">
       <button
         onClick={() => setIsFilterModalOpen(true)}

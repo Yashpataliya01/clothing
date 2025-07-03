@@ -4,10 +4,12 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useContext,
 } from "react";
 import { ShoppingCart, X, Minus, Plus, Bookmark } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { AppContext } from "../../context/AuthContext.jsx";
 
 const MyCart = () => {
   const navigate = useNavigate();
@@ -19,6 +21,7 @@ const MyCart = () => {
   const [sizeUpdateError, setSizeUpdateError] = useState(null);
   const [discounts, setDiscounts] = useState([]);
   const debounceTimeout = useRef(null);
+  const { setFavcart } = useContext(AppContext);
 
   const parseColor = (colorName) => {
     if (!colorName) return "#cccccc";
@@ -158,6 +161,7 @@ const MyCart = () => {
       setError(err.message);
     } finally {
       setUpdating((prev) => ({ ...prev, [productId + size]: false }));
+      setFavcart((prev) => prev - 1);
     }
   };
 

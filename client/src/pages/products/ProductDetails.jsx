@@ -1,14 +1,7 @@
-import React, { useState, useEffect } from "react";
-import {
-  Heart,
-  Share2,
-  ShoppingCart,
-  ArrowLeft,
-  ArrowRight,
-  Minus,
-  Plus,
-} from "lucide-react";
+import React, { useState, useEffect, useContext } from "react";
+import { ShoppingCart, ArrowLeft, ArrowRight, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AppContext } from "../../context/AuthContext.jsx"; // Adjust the import path as needed
 
 const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
@@ -23,6 +16,7 @@ const ProductDetailPage = () => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
   const navigate = useNavigate();
+  const { setFavcart } = useContext(AppContext);
 
   const parseColor = (colorName) => {
     if (!colorName) return "#cccccc";
@@ -146,6 +140,7 @@ const ProductDetailPage = () => {
       alert("Error adding to cart: " + err.message);
     } finally {
       setIsAddingToCart(false);
+      setFavcart((prev) => prev + 1);
     }
   };
 

@@ -164,7 +164,7 @@ const ProductsPage = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[80%] mx-auto px-4 sm:px-6 lg:px-8">
         <FilterBar
           setIsFilterModalOpen={setIsFilterModalOpen}
           setIsSortModalOpen={setIsSortModalOpen}
@@ -191,7 +191,7 @@ const ProductsPage = () => {
         )}
 
         <div className="flex gap-8 py-6">
-          <div className="w-64 flex-shrink-0 hidden lg:block">
+          <div className="w-l flex-shrink-0 hidden lg:block">
             <div className="bg-white p-4 rounded-lg shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 Filters
