@@ -176,13 +176,6 @@ export default function Navbar() {
             </div>
           ))}
 
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search"
-            className="border rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-          />
-
           {/* Cart Icon */}
           <Link to="/cart" className="relative flex items-center">
             <ShoppingCart className="w-5 h-5 text-gray-600" />
@@ -215,8 +208,40 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu Icon */}
-        <div className="md:hidden">
+        {/* Mobile: Cart and User Icons + Menu Toggle */}
+        <div className="md:hidden flex items-center space-x-3">
+          {/* Cart Icon */}
+          <Link to="/cart" className="relative flex items-center">
+            <ShoppingCart className="w-5 h-5 text-gray-600" />
+            {favcart > 0 && (
+              <div className="absolute bottom-3 left-4 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
+                {favcart}
+              </div>
+            )}
+          </Link>
+
+          {/* User Icon with Dropdown */}
+          <div className="relative user-dropdown">
+            <User
+              className="text-gray-700 w-5 h-5 cursor-pointer"
+              onClick={handleUserClick}
+            />
+            {user && dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 z-50">
+                <div className="px-4 py-2 text-sm text-gray-700">
+                  {user.displayName || "User"}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Toggle */}
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -297,40 +322,6 @@ export default function Navbar() {
               )}
             </div>
           ))}
-          <div className="mt-4 flex items-center space-x-2">
-            <input
-              type="text"
-              placeholder="Search"
-              className="w-full border rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-            <Link to="/cart" className="relative flex items-center">
-              <ShoppingCart className="w-5 h-5 text-gray-600" />
-              {favcart > 0 && (
-                <div className="absolute bottom-3 left-4 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-white text-xs">
-                  {favcart}
-                </div>
-              )}
-            </Link>
-            <div className="relative user-dropdown">
-              <User
-                className="text-gray-700 w-5 h-5 cursor-pointer"
-                onClick={handleUserClick}
-              />
-              {user && dropdownOpen && (
-                <div className="mt-2 w-full bg-white border rounded-lg shadow-lg py-2 z-50">
-                  <div className="px-4 py-2 text-sm text-gray-700">
-                    {user.displayName || "User"}
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       )}
     </nav>

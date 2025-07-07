@@ -1,24 +1,18 @@
 import { motion } from "framer-motion";
 import img from "../../../../assets/home/headerStrap.png";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useGetProductsByCategoryQuery } from "../../../../services/productsApi.js"; // Adjust path based on your project structure
 
 export default function NewArrivalsGrid({ products }) {
-  const [data, setData] = useState([]);
-  // State to track selected color for each product
   const [selectedColors, setSelectedColors] = useState({});
 
-  const getProductdata = async () => {
-    const res = await fetch(
-      `http://localhost:5000/api/product?category=${products?._id}`
-    );
-    const data = await res.json();
-    setData(data);
-  };
-
-  useEffect(() => {
-    getProductdata();
-  }, [products]);
+  // Fetch products using RTK Query
+  const {
+    data = [],
+    isLoading,
+    error,
+  } = useGetProductsByCategoryQuery(products?._id || "");
 
   // Better color parsing function that handles any color name
   const parseColor = (colorName) => {
@@ -88,6 +82,62 @@ export default function NewArrivalsGrid({ products }) {
     return selectedVariant?.images?.[0]?.url || "";
   };
 
+  if (isLoading) {
+    return (
+      <section className="w-full mx-auto py-16 px-4">
+        <div className="text-center py-20">
+          <div className="flex items-center justify-center space-x-3">
+            <svg
+              className="animate-spin h-8 w-8 text-gray-800"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              />
+            </svg>
+            <span className="text-gray-800 text-lg">Loading products...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="w-full mx-auto py-16 px-4">
+        <div className="text-center py-20">
+          <div className="p-4 bg-red-100 text-red-700 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-6 h-6 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Failed to load products. Please try again later.
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full mx-auto py-16 px-4">
       {/* Minimal Header */}
@@ -112,10 +162,9 @@ export default function NewArrivalsGrid({ products }) {
 
       {data?.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
-          {data?.map((product, idx) => (
-            <Link to={`/products/${product._id}`}>
+          {data?.slice(0, 4).map((product, idx) => (
+            <Link to={`/products/${product._id}`} key={product._id || idx}>
               <motion.div
-                key={product._id || idx}
                 className="group cursor-pointer"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -180,7 +229,10 @@ export default function NewArrivalsGrid({ products }) {
                           } cursor-pointer`}
                           style={{ backgroundColor: parseColor(variant.color) }}
                           title={variant.color}
-                          onClick={() => handleColorClick(product._id, variant)}
+                          onClick={(e) => {
+                            e.preventDefault(); // Prevent Link navigation on color click
+                            handleColorClick(product._id, variant);
+                          }}
                         />
                       ))}
                       {product.variants.length > 5 && (

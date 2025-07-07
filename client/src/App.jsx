@@ -9,6 +9,8 @@ import ProductDetailPage from "./pages/products/ProductDetails";
 import Login from "./components/authentication/Login";
 import UserInfoModal from "./components/authentication/UserInfo";
 import MyCart from "./pages/cart/MyCart";
+import About from "./pages/about/About.jsx";
+import Contact from "./pages/contact/Contact.jsx";
 import { AppProvider } from "./context/AuthContext.jsx";
 
 const App = () => {
@@ -35,6 +37,8 @@ const App = () => {
             <Route path="/products/:id" element={<ProductDetailPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cart" element={<MyCart />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
         {showModal && <UserInfoModal onClose={() => setShowModal(false)} />}

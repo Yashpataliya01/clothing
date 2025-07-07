@@ -1,57 +1,39 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useGetHeadersQuery } from "../../../../services/productsApi.js"; // Adjust path based on your project structure
 
 const ModernHeroSlider = () => {
-  const [headers, setHeaders] = useState([]);
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const intervalRef = useRef(null);
-
-  // Layout options to cycle through
   const layouts = ["leftElegant", "rightClassic", "centerModern"];
 
-  // Fetch headers from API
-  useEffect(() => {
-    const fetchHeaders = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/header/");
-        if (!response.ok) throw new Error("Failed to fetch headers");
-        const data = await response.json();
-        // Map API data to slider format
-        const mappedData = data.map((header, i) => ({
-          title: header.name,
-          subtitle: header.description,
-          image: header.image,
-          accent: header.tag,
-          buttonText: "Shop Now", // Hardcoded as not provided by API
-          layout: layouts[i % layouts.length], // Cycle through layouts
-        }));
-        setHeaders(mappedData);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load headers. Please try again later.");
-        setLoading(false);
-      }
-    };
+  // Fetch headers using RTK Query
+  const { data: headers = [], isLoading, error } = useGetHeadersQuery();
 
-    fetchHeaders();
-  }, []);
+  // Map API data to slider format
+  const mappedHeaders = headers.map((header, i) => ({
+    title: header.name,
+    subtitle: header.description,
+    image: header.image,
+    accent: header.tag,
+    buttonText: "Shop Now",
+    layout: layouts[i % layouts.length],
+  }));
 
   // Handle slider auto-progression
   useEffect(() => {
-    if (headers.length === 0) return;
+    if (mappedHeaders.length === 0) return;
 
     const startTimer = () => {
       intervalRef.current = setInterval(() => {
         setProgress((prev) => {
           if (prev >= 100) {
-            setIndex((i) => (i + 1) % headers.length);
+            setIndex((i) => (i + 1) % mappedHeaders.length);
             return 0;
           }
-          return prev + 100 / 70; // 7 seconds = 7000ms, update every 100ms
+          return prev + 100 / 70;
         });
       }, 100);
     };
@@ -60,7 +42,7 @@ const ModernHeroSlider = () => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [index, headers.length]);
+  }, [index, mappedHeaders.length]);
 
   const handleDotClick = (i) => {
     setIndex(i);
@@ -79,7 +61,7 @@ const ModernHeroSlider = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <motion.span
-              className="block text-white/70 text-sm font-light tracking-[0.2em] mb-4"
+              className="block text-white/70 text-xl font-light tracking-[0.2em] mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -104,7 +86,7 @@ const ModernHeroSlider = () => {
             </motion.p>
             <Link to="/products">
               <motion.button
-                className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
+                className="px-8 py-3 bg-white text-black text-l font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -125,7 +107,7 @@ const ModernHeroSlider = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <motion.span
-              className="block text-white/70 text-sm font-light tracking-[0.2em] mb-4"
+              className="block text-white/70 text-xl font-light tracking-[0.2em] mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -150,7 +132,7 @@ const ModernHeroSlider = () => {
             </motion.p>
             <Link to="/products">
               <motion.button
-                className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
+                className="px-8 py-3 bg-white text-black text-l font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -171,7 +153,7 @@ const ModernHeroSlider = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <motion.span
-              className="block text-white/70 text-sm font-light tracking-[0.2em] mb-4"
+              className="block text-white/70 text-xl font-light tracking-[0.2em] mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
@@ -196,7 +178,7 @@ const ModernHeroSlider = () => {
             </motion.p>
             <Link to="/products">
               <motion.button
-                className="px-8 py-3 bg-white text-black text-sm font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
+                className="px-8 py-3 bg-white text-black text-l font-semibold hover:bg-gray-100 transition-colors duration-300 rounded-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
@@ -212,7 +194,7 @@ const ModernHeroSlider = () => {
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <section className="relative w-full h-screen flex items-center justify-center bg-gray-900">
         <div className="flex items-center space-x-3">
@@ -232,7 +214,7 @@ const ModernHeroSlider = () => {
               d="M4 12a8 8 0 018-8v8z"
             />
           </svg>
-          <span className="text-white text-lg">Loading headers...</span>
+          <span className="text-white text-xlg">Loading headers...</span>
         </div>
       </section>
     );
@@ -255,28 +237,27 @@ const ModernHeroSlider = () => {
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          {error}
+          Failed to load headers. Please try again later.
         </div>
       </section>
     );
   }
 
-  if (headers.length === 0) {
+  if (mappedHeaders.length === 0) {
     return (
       <section className="relative w-full h-screen flex items-center justify-center bg-gray-900">
-        <div className="text-white text-lg">No headers available.</div>
+        <div className="text-white text-xlg">No headers available.</div>
       </section>
     );
   }
 
   return (
     <section className="relative w-full h-screen overflow-hidden bg-black">
-      {/* Background slider */}
       <div
         className="absolute inset-0 flex transition-transform duration-1000 ease-out"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {headers.map((slide, i) => (
+        {mappedHeaders.map((slide, i) => (
           <div key={i} className="w-full h-full relative flex-shrink-0">
             <div className="absolute inset-0 bg-black/20 z-10" />
             <img
@@ -288,16 +269,14 @@ const ModernHeroSlider = () => {
         ))}
       </div>
 
-      {/* Content overlay */}
       <div className="absolute inset-0 z-20">
         <AnimatePresence mode="wait">
-          {getContentDesign(headers[index], index)}
+          {getContentDesign(mappedHeaders[index], index)}
         </AnimatePresence>
       </div>
 
-      {/* Enhanced navigation */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-4">
-        {headers.map((_, i) => (
+        {mappedHeaders.map((_, i) => (
           <button
             key={i}
             onClick={() => handleDotClick(i)}

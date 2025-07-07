@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { useGetCategoriesQuery } from "../../services/productsApi.js"; // Adjust path based on your project structure
 import AutoScrollHeader from "./component/header/Header";
 import ShopByCategory from "./component/shopBy/ShopBy";
 import StatementHighlight from "./component/highlights/Highlights";
 import NewArrivalsGrid from "./component/newArivals/NewArivals";
 
 const Home = () => {
-  const [categories, setCategories] = useState([]);
-  const getDatabasedonCategory = async () => {
-    const response = await fetch("http://localhost:5000/api/categorie");
-    const data = await response.json();
-    setCategories(data);
-  };
-  useEffect(() => {
-    getDatabasedonCategory();
-  }, []);
+  const { data: categories = [], isLoading, error } = useGetCategoriesQuery();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading categories</div>;
+
   return (
     <div>
       <AutoScrollHeader />

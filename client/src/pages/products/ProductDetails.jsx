@@ -1,22 +1,35 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { ShoppingCart, ArrowLeft, ArrowRight, Minus, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../../context/AuthContext.jsx"; // Adjust the import path as needed
+import {
+  useGetProductQuery,
+  useAddToCartMutation,
+} from "../../services/productsApi.js"; // Adjust path based on your project structure
 
 const ProductDetailPage = () => {
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { setFavcart } = useContext(AppContext);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
-  const navigate = useNavigate();
-  const { setFavcart } = useContext(AppContext);
+
+  // Extract product ID from URL
+  const id = window.location.pathname.split("/").pop();
+
+  // Fetch product using RTK Query
+  const { data: product, isLoading, error } = useGetProductQuery(id);
+
+  // Add to cart mutation
+  const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
+
+  // Set initial size when product data is loaded
+  if (product && !selectedSize && product.size?.length > 0) {
+    setSelectedSize(product.size[0]);
+  }
 
   const parseColor = (colorName) => {
     if (!colorName) return "#cccccc";
@@ -24,7 +37,6 @@ const ProductDetailPage = () => {
     const tempElement = document.createElement("div");
     tempElement.style.color = colorName.toLowerCase().replace(/\s+/g, "");
     document.body.appendChild(tempElement);
-
     const computedColor = window.getComputedStyle(tempElement).color;
     document.body.removeChild(tempElement);
 
@@ -35,32 +47,22 @@ const ProductDetailPage = () => {
     ) {
       const rgbMatch = computedColor.match(/\d+/g);
       if (rgbMatch && rgbMatch.length >= 3) {
-        const hex =
-          "#" +
-          rgbMatch
-            .slice(0, 3)
-            .map((x) => parseInt(x).toString(16).padStart(2, "0"))
-            .join("");
-        return hex;
+        return `#${rgbMatch
+          .slice(0, 3)
+          .map((x) => parseInt(x).toString(16).padStart(2, "0"))
+          .join("")}`;
       }
     }
 
     const colorMap = {
-      "navy blue": "#000080",
       navyblue: "#000080",
       "light blue": "#ADD8E6",
       lightblue: "#ADD8E6",
-      "dark blue": "#00008B",
       darkblue: "#00008B",
-      "light green": "#90EE90",
       lightgreen: "#90EE90",
-      "dark green": "#006400",
       darkgreen: "#006400",
-      "light gray": "#D3D3D3",
       lightgray: "#D3D3D3",
-      "dark gray": "#A9A9A9",
       darkgray: "#A9A9A9",
-      "off white": "#F8F8FF",
       offwhite: "#F8F8FF",
     };
 
@@ -68,40 +70,24 @@ const ProductDetailPage = () => {
     return colorMap[normalizedColor] || colorName.toLowerCase();
   };
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true);
-      try {
-        const id = window.location.pathname.split("/").pop(); // Extract ID from URL
-        const res = await fetch(`http://localhost:5000/api/product/${id}`);
-        if (!res.ok) throw new Error("Failed to fetch product");
-        const data = await res.json();
-        setProduct(data);
-        setSelectedSize(data.size?.[0] || null); // Set first size if available
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, []);
-
   const handleVariantChange = (variantIndex) => {
     setSelectedVariantIndex(variantIndex);
-    setSelectedImageIndex(0); // Reset to first image of selected variant
+    setSelectedImageIndex(0);
   };
 
   const handleImageNavigation = (direction) => {
     const currentVariant = product?.variants[selectedVariantIndex];
     const maxIndex = currentVariant?.images.length - 1 || 0;
 
-    if (direction === "next") {
-      setSelectedImageIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-    } else {
-      setSelectedImageIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
-    }
+    setSelectedImageIndex((prev) =>
+      direction === "next"
+        ? prev >= maxIndex
+          ? 0
+          : prev + 1
+        : prev <= 0
+        ? maxIndex
+        : prev - 1
+    );
   };
 
   const handleAddToCart = async () => {
@@ -115,32 +101,20 @@ const ProductDetailPage = () => {
       alert("Please select a size");
       return;
     }
-    setIsAddingToCart(true);
-    try {
-      const response = await fetch("http://localhost:5000/api/cart/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.uid,
-          productId: product._id,
-          quantity,
-          size: selectedSize,
-          color: product.variants[selectedVariantIndex].color,
-        }),
-      });
 
-      const data = await response.json();
-      if (!response.ok)
-        throw new Error(data.message || "Failed to add to cart");
+    try {
+      await addToCart({
+        userId: user.uid,
+        productId: product._id,
+        quantity,
+        size: selectedSize,
+        color: product.variants[selectedVariantIndex].color,
+      }).unwrap();
       alert("Item added to cart successfully!");
+      setFavcart((prev) => prev + 1);
     } catch (err) {
       console.error("Add to cart error:", err);
-      alert("Error adding to cart: " + err.message);
-    } finally {
-      setIsAddingToCart(false);
-      setFavcart((prev) => prev + 1);
+      alert(`Error adding to cart: ${err.data?.message || err.message}`);
     }
   };
 
@@ -148,7 +122,7 @@ const ProductDetailPage = () => {
   const currentImage =
     currentVariant?.images[selectedImageIndex]?.url || "/placeholder.jpg";
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -169,7 +143,7 @@ const ProductDetailPage = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Oops! Something went wrong
           </h2>
-          <p className="text-gray-600">{error}</p>
+          <p className="text-gray-600">Failed to load product</p>
         </div>
       </div>
     );
@@ -193,13 +167,22 @@ const ProductDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="text-sm text-gray-500">
-            <span className="hover:text-gray-900 transition-colors">Home</span>
+            <span
+              className="hover:text-gray-900 transition-colors cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              Home
+            </span>
             <span className="mx-2">/</span>
-            <span className="hover:text-gray-900 transition-colors">
+            <span
+              className="hover:text-gray-900 transition-colors cursor-pointer"
+              onClick={() =>
+                navigate(`/products?category=${product.category?._id}`)
+              }
+            >
               {product.category?.name}
             </span>
             <span className="mx-2">/</span>
@@ -210,9 +193,7 @@ const ProductDetailPage = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-start">
-          {/* Product Images */}
           <div className="lg:sticky lg:top-8">
-            {/* Main Image */}
             <div className="relative group">
               <div
                 className="w-full aspect-square rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden shadow-2xl cursor-zoom-in"
@@ -223,8 +204,6 @@ const ProductDetailPage = () => {
                   alt={product.name}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-
-                {/* Image Navigation Arrows */}
                 {currentVariant?.images.length > 1 && (
                   <>
                     <button
@@ -247,8 +226,6 @@ const ProductDetailPage = () => {
                     </button>
                   </>
                 )}
-
-                {/* Discount Badge */}
                 {product.discountedPrice && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
                     -
@@ -259,15 +236,13 @@ const ProductDetailPage = () => {
                   </div>
                 )}
               </div>
-
-              {/* Image Indicators */}
               {currentVariant?.images.length > 1 && (
                 <div className="flex justify-center mt-4 gap-2">
                   {currentVariant.images.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`w-3 h-3 rounded-full  ${
+                      className={`w-3 h-3 rounded-full ${
                         selectedImageIndex === index
                           ? "bg-black scale-125"
                           : "bg-gray-300 hover:bg-gray-400"
@@ -277,8 +252,6 @@ const ProductDetailPage = () => {
                 </div>
               )}
             </div>
-
-            {/* Thumbnail Gallery */}
             <div className="flex gap-3 mt-6 overflow-x-auto pb-2">
               {currentVariant?.images.map((img, index) => (
                 <button
@@ -296,9 +269,7 @@ const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Product Info */}
           <div className="mt-10 lg:mt-0">
-            {/* Header */}
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 leading-tight">
@@ -310,21 +281,20 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Price */}
             <div className="mb-8">
               <div className="flex items-baseline gap-4 mb-2">
                 {product.discountedPrice ? (
                   <>
                     <span className="text-3xl font-bold text-gray-900">
-                      ₹ {product.discountedPrice.toFixed(2)}
+                      ₹{product.discountedPrice.toFixed(2)}
                     </span>
                     <span className="text-xl text-gray-400 line-through">
                       ₹{product.price.toFixed(2)}
                     </span>
                   </>
                 ) : (
-                  <span className="text-4xl font-bold text-gray-900">
-                    ${product.price.toFixed(2)}
+                  <span className="text-3xl font-bold text-gray-900">
+                    ₹{product.price.toFixed(2)}
                   </span>
                 )}
               </div>
@@ -333,12 +303,11 @@ const ProductDetailPage = () => {
               </p>
             </div>
 
-            {/* Color Selection */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">Color</h3>
                 <span className="text-sm text-gray-500">
-                  {currentVariant?.name}
+                  {currentVariant?.color}
                 </span>
               </div>
               <div className="flex gap-3">
@@ -361,7 +330,6 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Size Selection */}
             {product.size && product.size.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
@@ -388,7 +356,6 @@ const ProductDetailPage = () => {
               </div>
             )}
 
-            {/* Quantity */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Quantity
@@ -414,7 +381,6 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Add to Cart */}
             <div className="space-y-4 mb-8">
               <button
                 onClick={handleAddToCart}
@@ -436,7 +402,6 @@ const ProductDetailPage = () => {
               </button>
             </div>
 
-            {/* Product Details Tabs */}
             <div className="border-t border-gray-200 pt-8">
               <div className="flex border-b border-gray-200 mb-6">
                 {["description"].map((tab) => (
@@ -453,7 +418,6 @@ const ProductDetailPage = () => {
                   </button>
                 ))}
               </div>
-
               <div className="prose prose-gray max-w-none">
                 {activeTab === "description" && (
                   <p className="text-gray-700 leading-relaxed">
@@ -466,7 +430,6 @@ const ProductDetailPage = () => {
         </div>
       </div>
 
-      {/* Image Modal */}
       {showImageModal && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"

@@ -1,25 +1,84 @@
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-export default function EditorialProductSpotlight() {
-  const [products, setProducts] = useState([]);
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/product?tags=${encodeURIComponent(
-          "Most Trending"
-        )}`
-      );
-      const data = await res.json();
-      setProducts(data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
+import { useGetTrendingProductsQuery } from "../../../../services/productsApi.js"; // Adjust path based on your project structure
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+export default function EditorialProductSpotlight() {
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useGetTrendingProductsQuery();
+
+  if (isLoading) {
+    return (
+      <section className="w-full py-10 md:py-20 sm:py-10 max-h-fit overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 flex justify-center items-center">
+          <div className="flex items-center space-x-3">
+            <svg
+              className="animate-spin h-8 w-8 text-black"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8z"
+              />
+            </svg>
+            <span className="text-black text-lg">
+              Loading trending products...
+            </span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="w-full py-10 md:py-20 sm:py-10 max-h-fit overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 flex justify-center items-center">
+          <div className="p-4 bg-red-100 text-red-700 rounded-lg flex items-center">
+            <svg
+              className="w-6 h-6 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Failed to load trending products. Please try again later.
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <section className="w-full py-10 md:py-20 sm:py-10 max-h-fit overflow-hidden">
+        <div className="max-w-6xl mx-auto px-6 flex justify-center items-center">
+          <div className="text-black text-lg">
+            No trending products available.
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full py-10 md:py-20 sm:py-10 max-h-fit overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Grid3X3, List } from "lucide-react";
 import FilterSection from "./components/FilterSection";
@@ -6,20 +6,18 @@ import FilterModal from "./components/FilterModal";
 import SortModal from "./components/SortModal";
 import ProductGrid from "./components/ProductGrid";
 import FilterBar from "./components/FilterBar";
+import { useGetProductsQuery } from "../../services/productsApi.js"; // Adjust path based on your project structure
 
 const ProductsPage = () => {
   const location = useLocation();
   const categoryId = location.state?.categoryId || null;
   const initialTag = location.state?.tags || null;
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     size: [],
     colors: [],
     gender: [],
-    tags: initialTag ? [initialTag] : [], // Initialize tags with initialTag
+    tags: initialTag ? [initialTag] : [],
     minPrice: "",
     maxPrice: "",
   });
@@ -35,46 +33,26 @@ const ProductsPage = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const queryParams = new URLSearchParams();
-      if (categoryId) queryParams.append("category", categoryId);
-      if (filters.size.length)
-        queryParams.append("size", filters.size.join(","));
-      if (filters.colors.length)
-        queryParams.append("colors", filters.colors.join(","));
-      if (filters.gender.length)
-        queryParams.append("gender", filters.gender.join(","));
-      if (filters.tags.length)
-        queryParams.append("tags", filters.tags.join(","));
-      if (filters.minPrice) queryParams.append("minPrice", filters.minPrice);
-      if (filters.maxPrice) queryParams.append("maxPrice", filters.maxPrice);
-      const res = await fetch(
-        `http://localhost:5000/api/product?${queryParams}`
-      );
-      if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-      const data = await res.json();
-      setProducts(Array.isArray(data) ? data : []);
-      setError(null);
-    } catch (err) {
-      console.error("Fetch error:", err);
-      setError(err.message);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, [filters, categoryId]);
+  // Fetch products using RTK Query
+  const {
+    data: products = [],
+    isLoading,
+    error,
+  } = useGetProductsQuery({
+    category: categoryId || undefined,
+    size: filters.size.length ? filters.size.join(",") : undefined,
+    colors: filters.colors.length ? filters.colors.join(",") : undefined,
+    gender: filters.gender.length ? filters.gender.join(",") : undefined,
+    tags: filters.tags.length ? filters.tags.join(",") : undefined,
+    minPrice: filters.minPrice || undefined,
+    maxPrice: filters.maxPrice || undefined,
+  });
 
   const filterOptions = useMemo(() => {
     const sizes = new Set();
     const colors = new Set();
     const genders = new Set();
-    const tags = new Set(initialTag ? [initialTag] : []); // Include initialTag in tags
+    const tags = new Set(initialTag ? [initialTag] : []);
 
     products.forEach((product) => {
       if (product.size && Array.isArray(product.size)) {
@@ -149,7 +127,7 @@ const ProductsPage = () => {
       size: [],
       colors: [],
       gender: [],
-      tags: initialTag ? [initialTag] : [], // Preserve initialTag on clear
+      tags: initialTag ? [initialTag] : [],
       minPrice: "",
       maxPrice: "",
     });
@@ -260,13 +238,13 @@ const ProductsPage = () => {
           <div className="flex-1">
             <div className="hidden lg:flex items-center justify-between mb-6">
               <div className="flex items-center space-x-4">
-                {loading ? (
+                {isLoading ? (
                   <span className="text-sm font-medium text-gray-900">
                     Loading...
                   </span>
                 ) : error ? (
                   <span className="text-sm font-medium text-red-600">
-                    Error: {error}
+                    Error: Failed to load products
                   </span>
                 ) : (
                   <span className="text-sm font-medium text-gray-900">
@@ -311,13 +289,13 @@ const ProductsPage = () => {
             </div>
 
             <div className="lg:hidden mb-4">
-              {loading ? (
+              {isLoading ? (
                 <span className="text-sm font-medium text-gray-900">
                   Loading...
                 </span>
               ) : error ? (
                 <span className="text-sm font-medium text-red-600">
-                  Error: {error}
+                  Error: Failed to load products
                 </span>
               ) : (
                 <span className="text-sm font-medium text-gray-900">
@@ -328,8 +306,8 @@ const ProductsPage = () => {
 
             <ProductGrid
               products={filteredAndSortedProducts}
-              loading={loading}
-              error={error}
+              loading={isLoading}
+              error={error ? "Failed to load products" : null}
               viewMode={viewMode}
             />
           </div>

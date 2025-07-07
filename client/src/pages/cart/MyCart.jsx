@@ -10,6 +10,7 @@ import { ShoppingCart, X, Minus, Plus, Bookmark } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppContext } from "../../context/AuthContext.jsx";
+import CartPDFGenerator from "./component/PdfCreator.jsx";
 
 const MyCart = () => {
   const navigate = useNavigate();
@@ -23,16 +24,15 @@ const MyCart = () => {
   const debounceTimeout = useRef(null);
   const { setFavcart } = useContext(AppContext);
 
+  const userInformation = JSON.parse(localStorage.getItem("user-info"));
+
   const parseColor = (colorName) => {
     if (!colorName) return "#cccccc";
-
     const tempElement = document.createElement("div");
     tempElement.style.color = colorName.toLowerCase().replace(/\s+/g, "");
     document.body.appendChild(tempElement);
-
     const computedColor = window.getComputedStyle(tempElement).color;
     document.body.removeChild(tempElement);
-
     if (
       computedColor &&
       computedColor !== "rgb(0, 0, 0)" &&
@@ -49,7 +49,6 @@ const MyCart = () => {
         return hex;
       }
     }
-
     const colorMap = {
       "navy blue": "#000080",
       navyblue: "#000080",
@@ -68,7 +67,6 @@ const MyCart = () => {
       "off white": "#F8F8FF",
       offwhite: "#F8F8FF",
     };
-
     const normalizedColor = colorName.toLowerCase().replace(/\s+/g, "");
     return colorMap[normalizedColor] || colorName.toLowerCase();
   };
@@ -80,7 +78,6 @@ const MyCart = () => {
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
       const res = await fetch(`http://localhost:5000/api/cart/${user.uid}`);
@@ -203,23 +200,18 @@ const MyCart = () => {
   const { subtotal, discountAmount, applicableDiscount } = useMemo(() => {
     if (!cart?.products)
       return { subtotal: 0, discountAmount: 0, applicableDiscount: null };
-
     let rawSubtotal = cart.products.reduce(
       (sum, item) =>
         sum +
         (item.product.discountedPrice || item.product.price) * item.quantity,
       0
     );
-
-    // Find the highest applicable discount based on API data
     let applicableDiscount = discounts
       .filter((d) => rawSubtotal >= d.price)
-      .sort((a, b) => b.price - a.price)[0]; // Highest threshold first
-
+      .sort((a, b) => b.price - a.price)[0];
     let discountAmount = applicableDiscount
       ? (applicableDiscount.discountPercent / 100) * rawSubtotal
       : 0;
-
     return {
       subtotal: rawSubtotal - discountAmount,
       discountAmount,
@@ -303,9 +295,6 @@ const MyCart = () => {
                     className="w-24 h-24 overflow-hidden rounded-lg bg-gray-100 relative"
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.3 }}
-                    onClick={() => {
-                      /* Implement lightbox modal here */
-                    }}
                     style={{ cursor: "pointer" }}
                   >
                     <div
@@ -531,10 +520,6 @@ const MyCart = () => {
                         </span>
                       </div>
                     )}
-                    <div className="flex justify-between text-gray-600">
-                      <span>Shipping</span>
-                      <span className="text-green-600 font-medium">FREE</span>
-                    </div>
                     <div className="border-t pt-4">
                       <div className="flex justify-between text-lg font-semibold">
                         <span>Total</span>
@@ -561,24 +546,14 @@ const MyCart = () => {
                       </p>
                     )}
                   </div>
-                  <motion.button
-                    className={`w-full py-3 rounded-md text-white transition-all ${
-                      isCheckoutReady
-                        ? "bg-gradient-to-r from-teal-500 to-teal-700 hover:from-teal-600 hover:to-teal-800"
-                        : "bg-gray-400 cursor-not-allowed"
-                    }`}
-                    onClick={() =>
-                      isCheckoutReady
-                        ? alert("Proceeding to checkout...")
-                        : null
-                    }
-                    whileHover={isCheckoutReady ? { scale: 1.02 } : {}}
-                    whileTap={isCheckoutReady ? { scale: 0.98 } : {}}
-                    disabled={!isCheckoutReady}
-                    aria-label="Proceed to checkout"
-                  >
-                    Proceed to Checkout
-                  </motion.button>
+                  <CartPDFGenerator
+                    cart={cart}
+                    subtotal={subtotal}
+                    discountAmount={discountAmount}
+                    applicableDiscount={applicableDiscount}
+                    userInfo={userInformation}
+                    onError={(message) => setError(message)}
+                  />
                   <Link
                     to="/products"
                     className="w-full block text-center py-2 bg-gray-100 rounded-md hover:bg-gray-200 text-sm transition-colors"
