@@ -4,12 +4,33 @@ import Categories from "../models/categorie.model.js";
 export const getProducts = async (req, res) => {
   const { category, size, colors, gender, tags, minPrice, maxPrice } =
     req.query;
+
   try {
     const query = {};
-    if (category) query.category = category;
-    if (size) query.size = { $in: size.split(",").map((s) => s.trim()) };
-    if (colors)
+
+    // Filter by category (one or more)
+    if (category) {
+      const categoryArray = category.split(",").map((id) => id.trim());
+      query.category =
+        categoryArray.length > 1 ? { $in: categoryArray } : categoryArray[0];
+    }
+
+    // Filter by size
+    if (size) {
+      query.size = { $in: size.split(",").map((s) => s.trim()) };
+    }
+
+    // Filter by colors inside variants
+    if (colors) {
       query["variants.color"] = { $in: colors.split(",").map((c) => c.trim()) };
+    }
+
+    // Filter by tags
+    if (tags) {
+      query.tag = { $in: tags.split(",").map((t) => t.trim()) };
+    }
+
+    // Filter by price range
     if (minPrice || maxPrice) {
       query.$or = [
         {
@@ -27,16 +48,45 @@ export const getProducts = async (req, res) => {
         },
       ];
     }
-    if (tags) query.tag = { $in: tags.split(",").map((t) => t.trim()) };
+
+    // Filter by gender (case-insensitive)
     if (gender) {
+      const genderRegexArray = gender
+        .split(",")
+        .map((g) => new RegExp(`^${g.trim()}$`, "i"));
+
       const categories = await Categories.find({
-        gender: { $in: gender.split(",").map((g) => g.trim()) },
+        gender: { $in: genderRegexArray },
       }).select("_id");
-      const categoryIds = categories.map((cat) => cat._id);
-      if (categoryIds.length > 0) query.category = { $in: categoryIds };
-      else return res.status(200).json([]);
+
+      const genderCategoryIds = categories.map((cat) => cat._id);
+
+      if (genderCategoryIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      // If category is also provided, intersect both
+      if (query.category) {
+        const selectedCategoryIds = Array.isArray(query.category?.$in)
+          ? query.category.$in
+          : [query.category];
+
+        const filteredCategoryIds = selectedCategoryIds.filter((id) =>
+          genderCategoryIds.some((genId) => genId.equals(id))
+        );
+
+        if (filteredCategoryIds.length === 0) {
+          return res.status(200).json([]);
+        }
+
+        query.category = { $in: filteredCategoryIds };
+      } else {
+        // If no category provided, use all gender-matched categories
+        query.category = { $in: genderCategoryIds };
+      }
     }
 
+    // Fetch final filtered products
     const products = await Products.find(query).populate("category");
     res.status(200).json(products);
   } catch (error) {
@@ -162,12 +212,10 @@ export const updateProduct = async (req, res) => {
       { new: true, runValidators: true }
     ).populate("category");
 
-    res
-      .status(200)
-      .json({
-        message: "Product updated successfully",
-        product: updatedProduct,
-      });
+    res.status(200).json({
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

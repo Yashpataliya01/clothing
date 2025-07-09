@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import img from "../../../../assets/home/headerStrap.png";
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -82,6 +83,37 @@ const glowVariants = {
 };
 
 export default function ShopByCategory({ categories }) {
+  // Group categories by gender and limit to 4 items each
+  const groupedCategories = categories.reduce((acc, category) => {
+    const gender = category.gender?.toLowerCase() || "unisex";
+    if (!acc[gender]) {
+      acc[gender] = [];
+    }
+    if (acc[gender].length < 4) {
+      acc[gender].push(category);
+    }
+    return acc;
+  }, {});
+
+  // Define gender display names and colors
+  const genderConfig = {
+    men: {
+      title: "Men's Collection",
+      color: "from-blue-600 to-blue-800",
+      textColor: "text-blue-800",
+    },
+    women: {
+      title: "Women's Collection",
+      color: "from-pink-600 to-pink-800",
+      textColor: "text-pink-800",
+    },
+    unisex: {
+      title: "Unisex Collection",
+      color: "from-purple-600 to-purple-800",
+      textColor: "text-purple-800",
+    },
+  };
+
   return (
     <div className="w-full mx-auto py-16">
       {/* Enhanced Header */}
@@ -113,7 +145,7 @@ export default function ShopByCategory({ categories }) {
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.8 }}
           >
-            Category's
+            Categories
           </motion.h2>
 
           <motion.p
@@ -123,146 +155,205 @@ export default function ShopByCategory({ categories }) {
             viewport={{ once: true }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
-            Find your perfect style.
+            Find your perfect style by collection.
           </motion.p>
         </motion.div>
       </motion.div>
 
-      {/* Enhanced Categories Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-6"
-      >
-        {categories.map((category, index) => (
+      {/* Gender-based Categories */}
+      {Object.entries(groupedCategories).map(([gender, genderCategories]) => (
+        <motion.div
+          key={gender}
+          className="mb-20"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          {/* Gender Section Header */}
           <motion.div
-            key={category.name}
-            variants={cardVariants}
-            whileHover="hover"
-            initial="rest"
-            className="group relative"
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
           >
-            <motion.div
-              className="relative h-96 sm:h-[450px] overflow-hidden cursor-pointer"
-              whileHover={{ y: -8 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+            <motion.h3
+              className={`text-4xl md:text-5xl font-bold mb-4 ${
+                genderConfig[gender]?.textColor || "text-gray-800"
+              }`}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
+              transition={{ delay: 0.2, duration: 0.6 }}
             >
-              {/* Glow Effect */}
+              {genderConfig[gender]?.title ||
+                `${
+                  gender.charAt(0).toUpperCase() + gender.slice(1)
+                } Collection`}
+            </motion.h3>
+
+            {/* Gender accent line */}
+            <motion.div
+              className={`h-1 w-24 mx-auto bg-gradient-to-r ${
+                genderConfig[gender]?.color || "from-gray-400 to-gray-600"
+              } rounded-full`}
+              initial={{ width: 0 }}
+              whileInView={{ width: 96 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+            />
+          </motion.div>
+
+          {/* Categories Grid for this gender */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-6"
+          >
+            {genderCategories.map((category, index) => (
               <motion.div
-                variants={glowVariants}
-                className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-              />
-
-              {/* Image Container */}
-              <div className="relative h-full overflow-hidden bg-gray-200">
-                <motion.img
-                  variants={imageVariants}
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-
-                {/* Enhanced Gradient Overlay */}
+                key={`${gender}-${category.name}-${index}`}
+                variants={cardVariants}
+                whileHover="hover"
+                initial="rest"
+                className="group relative"
+              >
                 <motion.div
-                  variants={overlayVariants}
-                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
-                />
-
-                {/* Shimmer Effect */}
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
-                  animate={{
-                    translateX: ["100%", "200%"],
-                  }}
+                  className="relative h-96 sm:h-[450px] overflow-hidden cursor-pointer"
+                  whileHover={{ y: -8 }}
                   transition={{
-                    duration: 2,
-                    ease: "linear",
-                    repeat: Infinity,
-                    repeatDelay: 3,
+                    duration: 0.4,
+                    ease: "easeOut",
+                    delay: index * 0.1,
+                    duration: 0.6,
                   }}
-                />
-
-                {/* Content */}
-                <motion.div
-                  variants={contentVariants}
-                  className="absolute inset-0 flex flex-col justify-end p-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
                 >
-                  <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
-                    {category.name}
-                  </h3>
+                  {/* Glow Effect */}
+                  <motion.div
+                    variants={glowVariants}
+                    className={`absolute -inset-1 bg-gradient-to-r ${
+                      genderConfig[gender]?.color ||
+                      "from-blue-500 to-purple-500"
+                    } blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
+                  />
 
-                  <p className="text-gray-200 text-lg mb-6 font-light opacity-90">
-                    {category.description}
-                  </p>
+                  {/* Image Container */}
+                  <div className="relative h-full overflow-hidden bg-gray-200 rounded-lg">
+                    <motion.img
+                      variants={imageVariants}
+                      src={category.image}
+                      alt={category.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
 
-                  {/* CTA Button */}
-                  <div>
+                    {/* Enhanced Gradient Overlay */}
                     <motion.div
-                      className="flex items-center justify-center mt-16"
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
+                      variants={overlayVariants}
+                      className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
+                    />
+
+                    {/* Shimmer Effect */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
+                      animate={{
+                        translateX: ["100%", "200%"],
+                      }}
+                      transition={{
+                        duration: 2,
+                        ease: "linear",
+                        repeat: Infinity,
+                        repeatDelay: 3,
+                      }}
+                    />
+
+                    {/* Content */}
+                    <motion.div
+                      variants={contentVariants}
+                      className="absolute inset-0 flex flex-col justify-end p-8"
                     >
-                      <Link to="/products">
-                        <motion.button
-                          whileHover={{ scale: 1.05, y: -2 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="inline-flex items-center 
-                   px-4 py-2 text-sm 
-                   sm:px-6 sm:py-3 sm:text-lg 
-                   bg-white text-gray-900 
-                   rounded-full font-semibold 
-                   shadow-lg hover:shadow-xl 
-                   transition-all duration-300 
-                   group w-fit"
+                      <h4 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">
+                        {category.name}
+                      </h4>
+
+                      <p className="text-gray-200 text-base mb-6 font-light opacity-90">
+                        {category.description}
+                      </p>
+
+                      {/* CTA Button */}
+                      <div>
+                        <motion.div
+                          className="flex items-center justify-center mt-8"
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.6, delay: 0.2 }}
                         >
-                          View All Products
-                          <motion.svg
-                            className="ml-2 w-4 h-4 sm:w-5 sm:h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            animate={{ x: [0, 5, 0] }}
-                            transition={{
-                              duration: 1.5,
-                              repeat: Infinity,
-                              ease: "easeInOut",
+                          <Link
+                            to="/products"
+                            state={{
+                              categoryId: category?._id,
+                              gender: category?.gender,
                             }}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 8l4 4m0 0l-4 4m4-4H3"
-                            />
-                          </motion.svg>
-                        </motion.button>
-                      </Link>
+                            <motion.button
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="inline-flex items-center 
+                       px-4 py-2 text-sm 
+                       sm:px-6 sm:py-3 sm:text-base 
+                       bg-white text-gray-900 
+                       rounded-full font-semibold 
+                       shadow-lg hover:shadow-xl 
+                       transition-all duration-300 
+                       group w-fit"
+                            >
+                              Shop Now
+                              <motion.svg
+                                className="ml-2 w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                animate={{ x: [0, 5, 0] }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                }}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                />
+                              </motion.svg>
+                            </motion.button>
+                          </Link>
+                        </motion.div>
+                      </div>
                     </motion.div>
+
+                    {/* Corner Accent */}
+                    <motion.div
+                      className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-white/40 rounded-tr-2xl"
+                      initial={{ opacity: 0, scale: 0 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.5, duration: 0.6 }}
+                    />
                   </div>
                 </motion.div>
-
-                {/* Corner Accent */}
-                <motion.div
-                  className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-white/40 rounded-tr-2xl"
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                />
-              </div>
-            </motion.div>
+              </motion.div>
+            ))}
           </motion.div>
-        ))}
-      </motion.div>
+        </motion.div>
+      ))}
 
       {/* Enhanced Bottom CTA */}
       <motion.div
@@ -273,16 +364,16 @@ export default function ShopByCategory({ categories }) {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <motion.div
-          className=""
+          className="relative"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
           <Link
             to="/products"
-            className="relative inline-flex items-center px-8 py-3 text-sm font-medium text-gray-800 "
+            className="relative inline-flex items-center px-8 py-3 text-sm font-medium text-gray-800"
           >
             <span className="relative z-10 flex items-center gap-2">
-              Explore Collection
+              Explore All Collections
               <motion.svg
                 className="w-4 h-4"
                 fill="none"

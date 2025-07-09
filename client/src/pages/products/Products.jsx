@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Grid3X3, List } from "lucide-react";
 import FilterSection from "./components/FilterSection";
@@ -12,14 +12,20 @@ const ProductsPage = () => {
   const location = useLocation();
   const categoryId = location.state?.categoryId || null;
   const initialTag = location.state?.tags || null;
+  const initialGender = location.state?.gender || null;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   const [filters, setFilters] = useState({
     size: [],
     colors: [],
-    gender: [],
+    gender: initialGender ? [initialGender] : [],
     tags: initialTag ? [initialTag] : [],
     minPrice: "",
     maxPrice: "",
+    category: categoryId ? [categoryId] : [],
   });
   const [sortBy, setSortBy] = useState("relevance");
   const [viewMode, setViewMode] = useState("grid");
@@ -142,7 +148,7 @@ const ProductsPage = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-[80%] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
         <FilterBar
           setIsFilterModalOpen={setIsFilterModalOpen}
           setIsSortModalOpen={setIsSortModalOpen}

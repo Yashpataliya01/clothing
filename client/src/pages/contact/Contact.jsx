@@ -73,13 +73,13 @@ const ContactPage = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-gray-700" />
-                <span className="text-gray-700">tmpbhilwara2151@gmail.com</span>
+                <span className="text-gray-700">peshwanitushar1@gmail.com</span>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-gray-700" />
-                <span className="text-gray-700">8112261905</span>
+                <span className="text-gray-700">7665059655</span>
               </div>
-              <div className="text-blue-600 underline cursor-pointer">
+              <div className="text-blue-600 cursor-pointer">
                 Customer Support
               </div>
             </div>
@@ -110,7 +110,7 @@ const ContactPage = () => {
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
                   For media-related questions or press inquiries, please contact
-                  us at media@snappyapp.com.
+                  us at peshwanitushar1@gmail.com.
                 </p>
               </div>
             </div>
@@ -251,15 +251,11 @@ const ContactPage = () => {
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Headquarters
-              </h4>
               <div className="space-y-2 text-gray-600">
-                <p className="font-medium">The Mobile Point</p>
-                <p>Bhilwara, Rajasthan</p>
-                <p>Shop Address Here</p>
-                <p>Bhilwara, RJ 311001</p>
-                <p>India</p>
+                <p className="font-medium">style world, Plot no.13,</p>
+                <p>near nirankari bhawan,</p>
+                <p>Sindhu Nagar, Shastri Nagar,</p>
+                <p>Bhilwara, Rajasthan 311001</p>
               </div>
             </div>
 

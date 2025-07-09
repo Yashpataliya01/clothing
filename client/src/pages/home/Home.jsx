@@ -6,7 +6,8 @@ import StatementHighlight from "./component/highlights/Highlights";
 import NewArrivalsGrid from "./component/newArivals/NewArivals";
 
 const Home = () => {
-  const { data: categories = [], isLoading, error } = useGetCategoriesQuery();
+  const { data = [], isLoading, error } = useGetCategoriesQuery();
+  const categories = [...data].reverse();
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading categories</div>;

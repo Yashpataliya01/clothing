@@ -10,7 +10,7 @@ import {
 
 const AboutPage = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <div className="relative">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -31,7 +31,7 @@ const AboutPage = () => {
       </div>
 
       {/* Story Section */}
-      <div className="py-20 bg-gray-50">
+      <div className="py-20 ">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
@@ -60,7 +60,7 @@ const AboutPage = () => {
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square rounded-none bg-gray-100 p-12 border border-gray-200">
+              <div className="aspect-square rounded-none p-12 border border-gray-200">
                 <div className="h-full bg-black flex items-center justify-center">
                   <ShoppingBag className="w-20 h-20 text-white" />
                 </div>
@@ -71,7 +71,7 @@ const AboutPage = () => {
       </div>
 
       {/* Values Section */}
-      <div className="py-20 bg-white">
+      <div className="py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-light text-black mb-6">
@@ -107,7 +107,7 @@ const AboutPage = () => {
               },
             ].map((item, index) => (
               <div key={index} className="group">
-                <div className="bg-white border border-gray-200 p-8 hover:border-black transition-colors duration-300">
+                <div className=" border border-gray-200 p-8 hover:border-black transition-colors duration-300">
                   <div className="w-16 h-16 bg-black flex items-center justify-center mb-6 group-hover:bg-gray-800 transition-colors duration-300">
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
@@ -125,7 +125,7 @@ const AboutPage = () => {
       </div>
 
       {/* Product Range Section */}
-      <div className="py-20 bg-gray-50">
+      <div className="py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-light text-black mb-6">
@@ -180,7 +180,7 @@ const AboutPage = () => {
       </div>
 
       {/* Stats Section */}
-      <div className="py-16 bg-white">
+      <div className="py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 text-center">
             {[
