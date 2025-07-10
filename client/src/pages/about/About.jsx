@@ -8,21 +8,31 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+import aboutVideo from "../../assets/about/about.mp4"; // Assuming you have a video file in this path
+
 const AboutPage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-          <div className="text-center">
-            <div className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 text-gray-700 font-medium text-sm mb-8">
+      <div className="relative h-[600px] overflow-hidden">
+        <video
+          className="absolute top-0 left-0 w-full h-full object-cover"
+          src={aboutVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center text-white">
+            <div className="inline-flex items-center px-4 py-2 rounded-full border border-white text-white font-medium text-sm mb-8">
               <Sparkles className="w-4 h-4 mr-2" />
               Est. 2021 - Your Style Destination
             </div>
-            <h1 className="text-5xl md:text-7xl font-light text-black mb-6 tracking-tight">
+            <h1 className="text-5xl md:text-7xl font-light mb-6 tracking-tight">
               Style World
             </h1>
-            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-light">
+            <p className="text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed font-light">
               Where fashion meets function, and everyone finds something that
               feels just right
             </p>
