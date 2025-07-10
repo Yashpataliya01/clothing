@@ -13,6 +13,8 @@ import About from "./pages/about/About.jsx";
 import Contact from "./pages/contact/Contact.jsx";
 import { AppProvider } from "./context/AuthContext.jsx";
 
+import { FaWhatsapp } from "react-icons/fa";
+
 const App = () => {
   const [showModal, setShowModal] = useState(false);
 
@@ -25,6 +27,10 @@ const App = () => {
     }, 1000 * 60 * 10); // show after 10 minutes
     return () => clearTimeout(timer);
   }, []);
+
+  // WhatsApp URL with your number and a default message (optional)
+  const whatsappNumber = "9413884119";
+  const whatsappLink = `https://wa.me/${whatsappNumber}`;
 
   return (
     <AppProvider>
@@ -43,6 +49,15 @@ const App = () => {
         </main>
         {showModal && <UserInfoModal onClose={() => setShowModal(false)} />}
         <Footer />
+        <a
+          href={whatsappLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="whatsapp-float"
+          aria-label="Chat on WhatsApp"
+        >
+          <FaWhatsapp size={40} color="white" />
+        </a>
       </BrowserRouter>
     </AppProvider>
   );
