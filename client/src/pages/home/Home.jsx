@@ -1,27 +1,68 @@
 import React from "react";
-import { useGetCategoriesQuery } from "../../services/productsApi.js"; // Adjust path based on your project structure
+import {
+  useGetCategoriesQuery,
+  useGetProductsQuery,
+} from "../../services/productsApi.js";
 import AutoScrollHeader from "./component/header/Header";
 import ShopByCategory from "./component/shopBy/ShopBy";
 import StatementHighlight from "./component/highlights/Highlights";
 import NewArrivalsGrid from "./component/newArivals/NewArivals";
 
 const Home = () => {
-  const { data = [], isLoading, error } = useGetCategoriesQuery();
-  const categories = [...data].reverse();
+  const {
+    data: categoriesData = [],
+    isLoading: categoriesLoading,
+    error: categoriesError,
+  } = useGetCategoriesQuery();
+  // Select the last three categories
+  const lastThreeCategories = categoriesData.slice(-3);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading categories</div>;
+  // Fetch products for each of the last three categories
+  const productQueries = lastThreeCategories.map((category) => ({
+    category: category.name,
+    limit: 10, // Adjust limit as needed
+  }));
+
+  const productResults = productQueries.map((query, index) =>
+    useGetProductsQuery({
+      ...query,
+      page: 1,
+    })
+  );
+
+  if (categoriesLoading) return <div>Loading...</div>;
+  if (categoriesError) return <div>Error loading categories</div>;
 
   return (
     <div>
       <AutoScrollHeader />
-      <ShopByCategory categories={categories} />
+      <ShopByCategory categories={categoriesData} />
       <StatementHighlight />
-      {categories.length > 0 && (
+      {lastThreeCategories.length > 0 && (
         <>
-          <NewArrivalsGrid products={categories[0]} />
-          <NewArrivalsGrid products={categories[1]} />
-          <NewArrivalsGrid products={categories[2]} />
+          {lastThreeCategories.map((category, index) => {
+            const {
+              data: productData,
+              isLoading: productsLoading,
+              isError: productsError,
+            } = productResults[index];
+            const products = productData?.products || [];
+
+            return (
+              <div key={category._id || index}>
+                {productsLoading ? (
+                  <div>Loading products for {category.name}...</div>
+                ) : productsError ? (
+                  <div>Error loading products for {category.name}</div>
+                ) : (
+                  <NewArrivalsGrid
+                    products={products}
+                    categoryName={category.name} // Optional: pass category name for display
+                  />
+                )}
+              </div>
+            );
+          })}
         </>
       )}
     </div>
