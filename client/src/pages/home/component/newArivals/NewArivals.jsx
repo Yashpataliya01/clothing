@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useGetProductsByCategoryQuery } from "../../../../services/productsApi.js"; // Adjust path based on your project structure
 
 export default function NewArrivalsGrid({ products }) {
+  console.log("Products:", products);
   const [selectedColors, setSelectedColors] = useState({});
 
   // Fetch products using RTK Query
