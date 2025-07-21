@@ -160,199 +160,212 @@ export default function ShopByCategory({ categories }) {
         </motion.div>
       </motion.div>
 
-      {/* Gender-based Categories */}
-      {Object.entries(groupedCategories).map(([gender, genderCategories]) => (
+      {/* Check if no categories are available */}
+      {Object.keys(groupedCategories).length === 0 ? (
         <motion.div
-          key={gender}
-          className="mb-20"
-          initial={{ opacity: 0, y: 30 }}
+          className="text-center py-12"
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
         >
-          {/* Gender Section Header */}
+          <p className="text-lg text-gray-600 font-medium">No data found.</p>
+        </motion.div>
+      ) : (
+        /* Gender-based Categories */
+        Object.entries(groupedCategories).map(([gender, genderCategories]) => (
           <motion.div
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
+            key={gender}
+            className="mb-20"
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.8 }}
           >
-            <motion.h3
-              className={`text-4xl md:text-5xl font-bold mb-4 ${
-                genderConfig[gender]?.textColor || "text-gray-800"
-              }`}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              {genderConfig[gender]?.title ||
-                `${
-                  gender.charAt(0).toUpperCase() + gender.slice(1)
-                } Collection`}
-            </motion.h3>
-
-            {/* Gender accent line */}
+            {/* Gender Section Header */}
             <motion.div
-              className={`h-1 w-24 mx-auto bg-gradient-to-r ${
-                genderConfig[gender]?.color || "from-gray-400 to-gray-600"
-              } rounded-full`}
-              initial={{ width: 0 }}
-              whileInView={{ width: 96 }}
+              className="text-center mb-12"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-            />
-          </motion.div>
-
-          {/* Categories Grid for this gender */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-6"
-          >
-            {genderCategories.map((category, index) => (
-              <motion.div
-                key={`${gender}-${category.name}-${index}`}
-                variants={cardVariants}
-                whileHover="hover"
-                initial="rest"
-                className="group relative"
+              transition={{ duration: 0.6 }}
+            >
+              <motion.h3
+                className={`text-4xl md:text-5xl font-bold mb-4 ${
+                  genderConfig[gender]?.textColor || "text-gray-800"
+                }`}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2, duration: 0.6 }}
               >
+                {genderConfig[gender]?.title ||
+                  `${
+                    gender.charAt(0).toUpperCase() + gender.slice(1)
+                  } Collection`}
+              </motion.h3>
+
+              {/* Gender accent line */}
+              <motion.div
+                className={`h-1 w-24 mx-auto bg-gradient-to-r ${
+                  genderConfig[gender]?.color || "from-gray-400 to-gray-600"
+                } rounded-full`}
+                initial={{ width: 0 }}
+                whileInView={{ width: 96 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4, duration: 0.8 }}
+              />
+            </motion.div>
+
+            {/* Categories Grid for this gender */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-6"
+            >
+              {genderCategories.map((category, index) => (
                 <motion.div
-                  className="relative h-96 sm:h-[450px] overflow-hidden cursor-pointer"
-                  whileHover={{ y: -8 }}
-                  transition={{
-                    duration: 0.4,
-                    ease: "easeOut",
-                    delay: index * 0.1,
-                  }}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  key={`${gender}-${category.name}-${index}`}
+                  variants={cardVariants}
+                  whileHover="hover"
+                  initial="rest"
+                  className="group relative"
                 >
-                  {/* Glow Effect */}
                   <motion.div
-                    variants={glowVariants}
-                    className={`absolute -inset-1 bg-gradient-to-r ${
-                      genderConfig[gender]?.color ||
-                      "from-blue-500 to-purple-500"
-                    } blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
-                  />
-
-                  {/* Image Container */}
-                  <div className="relative h-full overflow-hidden bg-gray-200 rounded-lg">
-                    <motion.img
-                      variants={imageVariants}
-                      src={category.image}
-                      alt={category.name}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
+                    className="relative h-96 sm:h-[450px] overflow-hidden cursor-pointer"
+                    whileHover={{ y: -8 }}
+                    transition={{
+                      duration: 0.4,
+                      ease: "easeOut",
+                      delay: index * 0.1,
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                  >
+                    {/* Glow Effect */}
+                    <motion.div
+                      variants={glowVariants}
+                      className={`absolute -inset-1 bg-gradient-to-r ${
+                        genderConfig[gender]?.color ||
+                        "from-blue-500 to-purple-500"
+                      } blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500`}
                     />
 
-                    {/* Enhanced Gradient Overlay */}
-                    <motion.div
-                      variants={overlayVariants}
-                      className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
-                    />
+                    {/* Image Container */}
+                    <div className="relative h-full overflow-hidden bg-gray-200 rounded-lg">
+                      <motion.img
+                        variants={imageVariants}
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
 
-                    {/* Shimmer Effect */}
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
-                      animate={{
-                        translateX: ["100%", "200%"],
-                      }}
-                      transition={{
-                        duration: 2,
-                        ease: "linear",
-                        repeat: Infinity,
-                        repeatDelay: 3,
-                      }}
-                    />
+                      {/* Enhanced Gradient Overlay */}
+                      <motion.div
+                        variants={overlayVariants}
+                        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
+                      />
 
-                    {/* Content */}
-                    <motion.div
-                      variants={contentVariants}
-                      className="absolute inset-0 flex flex-col justify-end p-8"
-                    >
-                      <h4 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">
-                        {category.name}
-                      </h4>
+                      {/* Shimmer Effect */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full"
+                        animate={{
+                          translateX: ["100%", "200%"],
+                        }}
+                        transition={{
+                          duration: 2,
+                          ease: "linear",
+                          repeat: Infinity,
+                          repeatDelay: 3,
+                        }}
+                      />
 
-                      <p className="text-gray-200 text-base mb-6 font-light opacity-90">
-                        {category.description}
-                      </p>
+                      {/* Content */}
+                      <motion.div
+                        variants={contentVariants}
+                        className="absolute inset-0 flex flex-col justify-end p-8"
+                      >
+                        <h4 className="text-2xl sm:text-3xl font-bold text-white mb-3 tracking-tight">
+                          {category.name}
+                        </h4>
 
-                      {/* CTA Button */}
-                      <div>
-                        <motion.div
-                          className="flex items-center justify-center mt-8"
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.6, delay: 0.2 }}
-                        >
-                          <Link
-                            to="/products"
-                            state={{
-                              categoryId: category?._id,
-                              gender: category?.gender,
-                            }}
+                        <p className="text-gray-200 text-base mb-6 font-light opacity-90">
+                          {category.description}
+                        </p>
+
+                        {/* CTA Button */}
+                        <div>
+                          <motion.div
+                            className="flex items-center justify-center mt-8"
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 }}
                           >
-                            <motion.button
-                              whileHover={{ scale: 1.05, y: -2 }}
-                              whileTap={{ scale: 0.98 }}
-                              className="inline-flex items-center 
-                       px-4 py-2 text-sm 
-                       sm:px-6 sm:py-3 sm:text-base 
-                       bg-white text-gray-900 
-                       rounded-full font-semibold 
-                       shadow-lg hover:shadow-xl 
-                       transition-all duration-300 
-                       group w-fit"
+                            <Link
+                              to="/products"
+                              state={{
+                                categoryId: category?._id,
+                                gender: category?.gender,
+                              }}
                             >
-                              Shop Now
-                              <motion.svg
-                                className="ml-2 w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                                animate={{ x: [0, 5, 0] }}
-                                transition={{
-                                  duration: 1.5,
-                                  repeat: Infinity,
-                                  ease: "easeInOut",
-                                }}
+                              <motion.button
+                                whileHover={{ scale: 1.05, y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="inline-flex items-center 
+                         px-4 py-2 text-sm 
+                         sm:px-6 sm:py-3 sm:text-base 
+                         bg-white text-gray-900 
+                         rounded-full font-semibold 
+                         shadow-lg hover:shadow-xl 
+                         transition-all duration-300 
+                         group w-fit"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M17 8l4 4m0 0l-4 4m4-4H3"
-                                />
-                              </motion.svg>
-                            </motion.button>
-                          </Link>
-                        </motion.div>
-                      </div>
-                    </motion.div>
+                                Shop Now
+                                <motion.svg
+                                  className="ml-2 w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  animate={{ x: [0, 5, 0] }}
+                                  transition={{
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                  }}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                                  />
+                                </motion.svg>
+                              </motion.button>
+                            </Link>
+                          </motion.div>
+                        </div>
+                      </motion.div>
 
-                    {/* Corner Accent */}
-                    <motion.div
-                      className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-white/40 rounded-tr-2xl"
-                      initial={{ opacity: 0, scale: 0 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.5, duration: 0.6 }}
-                    />
-                  </div>
+                      {/* Corner Accent */}
+                      <motion.div
+                        className="absolute top-6 right-6 w-12 h-12 border-t-2 border-r-2 border-white/40 rounded-tr-2xl"
+                        initial={{ opacity: 0, scale: 0 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                      />
+                    </div>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            ))}
+              ))}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      ))}
+        ))
+      )}
 
       {/* Enhanced Bottom CTA */}
       <motion.div
@@ -391,14 +404,6 @@ export default function ShopByCategory({ categories }) {
                 />
               </motion.svg>
             </span>
-
-            {/* Subtle hover background */}
-            <motion.div
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              whileHover={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            />
           </Link>
 
           {/* Minimal underline accent */}

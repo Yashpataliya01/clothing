@@ -72,7 +72,7 @@ export default function EditorialProductSpotlight() {
       <section className="w-full py-10 md:py-20 sm:py-10 max-h-fit overflow-hidden">
         <div className="max-w-6xl mx-auto px-6 flex justify-center items-center">
           <div className="text-black text-lg">
-            No trending products available.
+            No product or no data available.
           </div>
         </div>
       </section>

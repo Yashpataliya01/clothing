@@ -6,7 +6,7 @@ import React, {
   useMemo,
   useContext,
 } from "react";
-import { ShoppingCart, X, Minus, Plus, Bookmark } from "lucide-react";
+import { ShoppingCart, X, Minus, Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppContext } from "../../context/AuthContext.jsx";
@@ -291,34 +291,39 @@ const MyCart = () => {
                   <X className="h-5 w-5" />
                 </button>
                 <div className="flex gap-6">
-                  <motion.div
-                    className="w-24 h-24 overflow-hidden rounded-lg bg-gray-100 relative"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.3 }}
-                    style={{ cursor: "pointer" }}
+                  <Link
+                    to={`/products/${item.product._id}`}
+                    key={item.product._id}
                   >
-                    <div
-                      className="w-full h-full bg-gray-200 animate-pulse"
-                      style={{ display: loading ? "block" : "none" }}
-                    />
-                    <img
-                      src={
-                        item.product.variants?.[0]?.images?.[0]?.url ||
-                        "https://via.placeholder.com/120"
-                      }
-                      alt={item.product.name}
-                      className="w-full h-full object-cover transition-opacity duration-300 absolute top-0 left-0"
-                      onLoad={(e) => (e.target.style.opacity = 1)}
-                      onError={(e) =>
-                        (e.target.src = "https://via.placeholder.com/120")
-                      }
-                      style={{ opacity: 0 }}
-                      loading="lazy"
-                    />
-                    <span className="absolute bottom-1 right-1 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full">
-                      {item.quantity} in cart
-                    </span>
-                  </motion.div>
+                    <motion.div
+                      className="w-24 h-24 overflow-hidden rounded-lg bg-gray-100 relative"
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.3 }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <div
+                        className="w-full h-full bg-gray-200 animate-pulse"
+                        style={{ display: loading ? "block" : "none" }}
+                      />
+                      <img
+                        src={
+                          item.product.variants?.[0]?.images?.[0]?.url ||
+                          "https://via.placeholder.com/120"
+                        }
+                        alt={item.product.name}
+                        className="w-full h-full object-cover transition-opacity duration-300 absolute top-0 left-0"
+                        onLoad={(e) => (e.target.style.opacity = 1)}
+                        onError={(e) =>
+                          (e.target.src = "https://via.placeholder.com/120")
+                        }
+                        style={{ opacity: 0 }}
+                        loading="lazy"
+                      />
+                      <span className="absolute bottom-1 right-1 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full">
+                        {item.quantity} in cart
+                      </span>
+                    </motion.div>
+                  </Link>
                   <div className="flex-1 relative">
                     <h3 className="text-lg font-semibold text-gray-900">
                       {item.product.name}

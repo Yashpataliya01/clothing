@@ -2,8 +2,16 @@ import Products from "../models/product.model.js";
 import Categories from "../models/categorie.model.js";
 
 export const getProducts = async (req, res) => {
-  const { category, size, colors, gender, tags, minPrice, maxPrice } =
-    req.query;
+  const {
+    category,
+    size,
+    colors,
+    gender,
+    tags,
+    minPrice,
+    maxPrice,
+    categoryName,
+  } = req.query;
 
   try {
     const query = {};
@@ -13,6 +21,41 @@ export const getProducts = async (req, res) => {
       const categoryArray = category.split(",").map((id) => id.trim());
       query.category =
         categoryArray.length > 1 ? { $in: categoryArray } : categoryArray[0];
+    }
+
+    // Filter by categoryName
+    if (categoryName) {
+      const categoryNameArray = categoryName
+        .split(",")
+        .map((name) => name.trim());
+      const categories = await Categories.find({
+        name: { $in: categoryNameArray },
+      }).select("_id");
+      const categoryIds = categories.map((cat) => cat._id);
+
+      if (categoryIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      // If category is also provided, intersect both
+      if (query.category) {
+        const selectedCategoryIds = Array.isArray(query.category?.$in)
+          ? query.category.$in
+          : [query.category];
+
+        const filteredCategoryIds = selectedCategoryIds.filter((id) =>
+          categoryIds.some((catId) => catId.equals(id))
+        );
+
+        if (filteredCategoryIds.length === 0) {
+          return res.status(200).json([]);
+        }
+
+        query.category = { $in: filteredCategoryIds };
+      } else {
+        // If no category provided, use all categoryName-matched categories
+        query.category = { $in: categoryIds };
+      }
     }
 
     // Filter by size

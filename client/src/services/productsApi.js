@@ -34,6 +34,7 @@ export const apiSlice = createApi({
           tags: params.tags || undefined,
           minPrice: params.minPrice || undefined,
           maxPrice: params.maxPrice || undefined,
+          categoryName: params.categoryName || undefined,
         },
       }),
     }),

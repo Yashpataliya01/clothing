@@ -11,6 +11,7 @@ import cartRoutes from "./routes/cart.route.js";
 import headerRoutes from "./routes/header.route.js";
 import discountRoutes from "./routes/discount.route.js";
 import UserRoute from "./routes/user.route.js";
+import TagRoute from "./routes/tag.route.js";
 
 // Configuration
 dotenv.config();
@@ -35,6 +36,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/header", headerRoutes);
 app.use("/api/discounts", discountRoutes);
 app.use("/api/users", UserRoute);
+app.use("/api/tag", TagRoute);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -26,6 +26,7 @@ const ProductsPage = () => {
     minPrice: "",
     maxPrice: "",
     category: categoryId ? [categoryId] : [],
+    categoryName: [], // Added categoryName filter
   });
   const [sortBy, setSortBy] = useState("relevance");
   const [viewMode, setViewMode] = useState("grid");
@@ -35,6 +36,7 @@ const ProductsPage = () => {
     color: true,
     gender: true,
     tags: true,
+    categoryName: true, // Added categoryName to openFilters
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
@@ -52,13 +54,18 @@ const ProductsPage = () => {
     tags: filters.tags.length ? filters.tags.join(",") : undefined,
     minPrice: filters.minPrice || undefined,
     maxPrice: filters.maxPrice || undefined,
+    categoryName: filters.categoryName.length
+      ? filters.categoryName.join(",")
+      : undefined, // Added categoryName to query
   });
 
+  console.log("Products:", products);
   const filterOptions = useMemo(() => {
     const sizes = new Set();
     const colors = new Set();
     const genders = new Set();
     const tags = new Set(initialTag ? [initialTag] : []);
+    const categoryNames = new Set(); // Added Set for category names
 
     products.forEach((product) => {
       if (product.size && Array.isArray(product.size)) {
@@ -76,6 +83,9 @@ const ProductsPage = () => {
       if (product.tag) {
         tags.add(product.tag);
       }
+      if (product.category?.name) {
+        categoryNames.add(product.category.name); // Add category name to Set
+      }
     });
 
     const options = {
@@ -83,6 +93,7 @@ const ProductsPage = () => {
       colors: Array.from(colors).sort(),
       genders: Array.from(genders).sort(),
       tags: Array.from(tags).sort(),
+      categoryNames: Array.from(categoryNames).sort(), // Added categoryNames to options
     };
     return options;
   }, [products, initialTag]);
@@ -136,6 +147,8 @@ const ProductsPage = () => {
       tags: initialTag ? [initialTag] : [],
       minPrice: "",
       maxPrice: "",
+      category: categoryId ? [categoryId] : [],
+      categoryName: [], // Added categoryName to clearFilters
     });
   };
 
@@ -227,6 +240,16 @@ const ProductsPage = () => {
                   options={filterOptions.tags}
                   isOpen={openFilters.tags}
                   onToggle={() => toggleFilterSection("tags")}
+                  filters={filters}
+                  handleFilterChange={handleFilterChange}
+                  handlePriceChange={handlePriceChange}
+                />
+                <FilterSection
+                  title="CATEGORY"
+                  filterType="categoryName"
+                  options={filterOptions.categoryNames}
+                  isOpen={openFilters.categoryName}
+                  onToggle={() => toggleFilterSection("categoryName")}
                   filters={filters}
                   handleFilterChange={handleFilterChange}
                   handlePriceChange={handlePriceChange}

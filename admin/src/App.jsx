@@ -9,6 +9,7 @@ import HeaderSection from "./pages/HeaderSection/HeaderSection";
 import AdminDiscounts from "./pages/discount/Discount";
 import Tranding from "./pages/tranding/Tranding";
 import Users from "./pages/users/Users";
+import Tags from "./pages/tags/Tags";
 
 const App = () => {
   return (
@@ -23,6 +24,7 @@ const App = () => {
           <Route path="/discount" element={<AdminDiscounts />} />
           <Route path="/tranding" element={<Tranding />} />
           <Route path="/users" element={<Users />} />
+          <Route path="/tags" element={<Tags />} />
         </Routes>
       </main>
     </BrowserRouter>

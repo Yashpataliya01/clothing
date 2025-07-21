@@ -28,6 +28,7 @@ const UserInfoModal = ({ onClose }) => {
       if (!res.ok) throw new Error(data.message || "Something went wrong");
       toast.success("Thank you for your info!");
       localStorage.setItem("user-info-submitted", "true");
+      localStorage.setItem("user-info", JSON.stringify(formData));
       onClose();
     } catch (err) {
       console.error(err);

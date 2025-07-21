@@ -9,7 +9,7 @@ export const getCategories = async (req, res) => {
   try {
     const query = req.query.gender ? { gender: req.query.gender } : {};
     const categories = await Categories.find(query);
-    res.status(200).json(categories);
+    res.status(200).json(categories.reverse());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

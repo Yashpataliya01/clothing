@@ -6,6 +6,7 @@ const AppContext = createContext();
 
 const AppProvider = ({ children }) => {
   const [favcart, setFavcart] = useState(0);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,8 +25,14 @@ const AppProvider = ({ children }) => {
     fetchData();
   }, [setFavcart]); // empty dependency array = only run once on mount
 
+  const updateModal = (value) => {
+    setShowModal(value);
+  };
+
   return (
-    <AppContext.Provider value={{ favcart, setFavcart }}>
+    <AppContext.Provider
+      value={{ favcart, setFavcart, showModal, updateModal }}
+    >
       {children}
     </AppContext.Provider>
   );

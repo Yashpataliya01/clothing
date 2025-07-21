@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import jsPDF from "jspdf";
+import { AppContext } from "../../../context/AuthContext";
 
 const generatePDFContent = (
   cart,
@@ -18,14 +19,14 @@ const generatePDFContent = (
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
-  doc.text("Your Company Name", margin, y);
+  doc.text("Style World", margin, y);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100);
   y += 5;
-  doc.text("123 Business Street, City, Country", margin, y);
+  doc.text("Plot no.13,Shastri Nagar,Bhilwara, Rajasthan 311001", margin, y);
   y += 5;
-  doc.text("Email: contact@company.com | Phone: +1234567890", margin, y);
+  doc.text("Email: peshwanitushar1@gmail.com | Phone: 7665059655", margin, y);
   y += 10;
 
   // Invoice Details
@@ -263,12 +264,26 @@ const CartPDFGenerator = ({
   userInfo,
   onError,
 }) => {
+  const { updateModal } = useContext(AppContext);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateAndSend = async () => {
+    const MyUser = localStorage.getItem("user-info");
+    const user = MyUser ? JSON.parse(MyUser) : null;
+
+    if (!user) {
+      updateModal(true);
+      return; // Prevent execution if no user
+    }
+
+    if (!cart?.products?.length) {
+      onError("Cart is empty");
+      return;
+    }
+
     setIsGenerating(true);
+
     try {
-      if (!cart?.products?.length) throw new Error("Cart is empty");
       const doc = generatePDFContent(
         cart,
         subtotal,
@@ -276,15 +291,19 @@ const CartPDFGenerator = ({
         applicableDiscount,
         userInfo
       );
+
       const pdfBlob = doc.output("blob");
       const pdfUrl = await uploadToCloudinary(pdfBlob);
+
       const message = `New order invoice: ${pdfUrl}`;
       const phoneNumber = "7665059655";
       const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
         message
       )}`;
+
       window.open(whatsappUrl, "_blank");
     } catch (error) {
+      console.error(error);
       onError(error.message || "Failed to generate or send invoice");
     } finally {
       setIsGenerating(false);
