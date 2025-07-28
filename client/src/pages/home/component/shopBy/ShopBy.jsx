@@ -99,13 +99,13 @@ export default function ShopByCategory({ categories }) {
   const genderConfig = {
     men: {
       title: "Men's Collection",
-      color: "from-blue-600 to-blue-800",
-      textColor: "text-blue-800",
+      color: "from-black to-black",
+      textColor: "text-black",
     },
     women: {
       title: "Women's Collection",
-      color: "from-pink-600 to-pink-800",
-      textColor: "text-pink-800",
+      color: "from-black to-black",
+      textColor: "text-black",
     },
     unisex: {
       title: "Unisex Collection",

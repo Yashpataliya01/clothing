@@ -113,7 +113,9 @@ export default function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
-        <img src={Logo} alt="" className="w-18 h-18" />
+        <Link to="/">
+          <img src={Logo} alt="" className="w-18 h-18" />
+        </Link>
 
         {/* Desktop Nav */}
         <div className="hidden md:flex space-x-8 items-center">

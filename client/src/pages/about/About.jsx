@@ -8,7 +8,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-import aboutVideo from "../../assets/about/about.mp4"; // Assuming you have a video file in this path
+import aboutVideo from "../../assets/about/about.mp4";
+import Logo from "../../assets/home/mainlogo.png";
 
 const AboutPage = () => {
   return (
@@ -71,9 +72,11 @@ const AboutPage = () => {
             </div>
             <div className="relative">
               <div className="aspect-square rounded-none p-12 border border-gray-200">
-                <div className="h-full bg-black flex items-center justify-center">
-                  <ShoppingBag className="w-20 h-20 text-white" />
-                </div>
+                <img
+                  src="https://www.indifi.com/blog/wp-content/uploads/2019/12/Things-You-Should-Know-as-a-Clothing-or-Fashion-Shop-Owner-e1579767390771.jpg"
+                  className="w-full h-full object-fill"
+                  alt=""
+                />
               </div>
             </div>
           </div>

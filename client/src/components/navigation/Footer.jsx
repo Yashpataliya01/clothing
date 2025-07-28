@@ -7,8 +7,21 @@ import {
   MapPin,
   Phone,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import Logo from "../../assets/home/mainlogo.png";
 
 const Footer = () => {
+  // Define URLs for each link
+  const links = [
+    { name: "Home", url: "/" },
+    { name: "Products", url: "/products" },
+    { name: "About", url: "/about" },
+    { name: "Contact", url: "/contact" },
+    { name: "Return Policy", url: "/return-policy" },
+    { name: "FAQs", url: "/faqs" },
+  ];
+
   return (
     <footer className="relative bg-[#0f0f0f] text-gray-300 py-16 px-6 sm:px-12">
       {/* Top Border Gradient */}
@@ -16,11 +29,9 @@ const Footer = () => {
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 z-10 relative">
         {/* Logo + Tagline */}
-        <div>
-          <h2 className="text-3xl font-bold text-white mb-3 tracking-tight">
-            CLOTHIQUE
-          </h2>
-          <p className="text-sm text-gray-400 leading-relaxed">
+        <div className="flex items-center flex-col">
+          <img src={Logo} className="w-20 mb-4 rounded-full" alt="" />
+          <p className="text-sm text-gray-400 leading-relaxed text-center">
             Style meets simplicity. Discover outfits crafted for confidence and
             comfort.
           </p>
@@ -40,15 +51,15 @@ const Footer = () => {
         {/* Quick Links */}
         <div>
           <h3 className="text-xl font-semibold mb-4 text-white">Quick Links</h3>
-          <ul className="space-y-2 text-sm">
-            {["Home", "Shop", "About", "Blog", "Contact"].map((link, i) => (
+          <ul className="grid grid-cols-2 grid-rows-2 gap-x-4 gap-y-2 text-sm">
+            {links.map((link, i) => (
               <li key={i}>
-                <a
-                  href="#"
+                <Link
+                  to={link.url}
                   className="hover:text-orange-400 hover:underline transition"
                 >
-                  {link}
-                </a>
+                  {link.name}
+                </Link>
               </li>
             ))}
           </ul>
@@ -60,11 +71,11 @@ const Footer = () => {
           <div className="space-y-3 text-sm text-gray-400">
             <div className="flex items-start gap-2">
               <Mail className="w-5 h-5 text-orange-500" />
-              <span>hello@clothique.com</span>
+              <span>peshwanitushar1@gmail.com</span>
             </div>
             <div className="flex items-start gap-2">
               <Phone className="w-5 h-5 text-orange-500" />
-              <span>+91 98765 43210</span>
+              <span>+91 7665059655</span>
             </div>
             <div className="flex items-start gap-2">
               <MapPin className="w-5 h-5 text-orange-500" />
@@ -76,7 +87,8 @@ const Footer = () => {
 
       {/* Footer Bottom */}
       <div className="mt-16 pt-6 border-t border-gray-800 text-sm text-center text-gray-500">
-        &copy; {new Date().getFullYear()} Clothique. Designed with ❤️ in India.
+        &copy; {new Date().getFullYear()} © 2025 Style World. All rights
+        reserved.
       </div>
     </footer>
   );

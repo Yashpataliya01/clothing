@@ -13,6 +13,8 @@ import About from "./pages/about/About.jsx";
 import Contact from "./pages/contact/Contact.jsx";
 import { AppProvider, AppContext } from "./context/AuthContext.jsx";
 import { FaWhatsapp } from "react-icons/fa";
+import ReturnPolicy from "./pages/return/Return.jsx";
+import Faqs from "./pages/faqs/Faqs.jsx";
 
 // Inner App logic that uses the context
 const AppContent = () => {
@@ -45,6 +47,8 @@ const AppContent = () => {
             <Route path="/cart" element={<MyCart />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/return-policy" element={<ReturnPolicy />} />
+            <Route path="/faqs" element={<Faqs />} />
           </Routes>
         </main>
         {showModal && <UserInfoModal onClose={() => updateModal(false)} />}
