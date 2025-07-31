@@ -43,10 +43,11 @@ export default function Navbar() {
 
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/categorie");
+        const res = await fetch(
+          "https://clothing-kg9h.onrender.com/api/categorie"
+        );
         const data = await res.json();
         setCategories(data);
-        console.log("Categories fetched:", data);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
       }
@@ -80,7 +81,7 @@ export default function Navbar() {
     }
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownOpen && !e.target.closest(".user-dropdown")) {
@@ -96,10 +97,10 @@ export default function Navbar() {
 
   // Filter categories by gender
   const menCategories = categories
-    .filter((category) => category.gender === "men")
+    .filter((cat) => cat.gender === "men")
     .slice(0, 5);
   const womenCategories = categories
-    .filter((category) => category.gender === "women")
+    .filter((cat) => cat.gender === "women")
     .slice(0, 5);
 
   const navLinks = [
@@ -113,8 +114,8 @@ export default function Navbar() {
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/">
-          <img src={Logo} alt="" className="w-18 h-18" />
+        <Link to="/" onClick={() => setMobileMenuOpen(false)}>
+          <img src={Logo} alt="Logo" className="w-18 h-18" />
         </Link>
 
         {/* Desktop Nav */}
@@ -140,7 +141,7 @@ export default function Navbar() {
                 )}
               </Link>
               {link.name === "Products" && productsDropdownOpen && (
-                <div className="absolute left-0  w-64 bg-white border rounded-lg shadow-lg py-2 z-50">
+                <div className="absolute left-0 w-64 bg-white border rounded-lg shadow-lg py-2 z-50">
                   <div className="px-4 py-2">
                     <h3 className="text-sm font-semibold text-gray-900 mb-2">
                       Men
@@ -151,7 +152,6 @@ export default function Navbar() {
                         state={{ categoryId: category?._id }}
                         to="/products"
                         className="block px-2 py-1 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setProductsDropdownOpen(false)}
                       >
                         {category.name}
                       </Link>
@@ -167,7 +167,6 @@ export default function Navbar() {
                         state={{ categoryId: category?._id }}
                         to="/products"
                         className="block px-2 py-1 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setProductsDropdownOpen(false)}
                       >
                         {category.name}
                       </Link>
@@ -188,7 +187,7 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* User Icon with Dropdown */}
+          {/* User Icon */}
           <div className="relative user-dropdown">
             <User
               className="text-gray-700 hover:text-black cursor-pointer w-5 h-5"
@@ -201,7 +200,7 @@ export default function Navbar() {
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Logout
                 </button>
@@ -210,9 +209,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile: Cart and User Icons + Menu Toggle */}
+        {/* Mobile Icons */}
         <div className="md:hidden flex items-center space-x-3">
-          {/* Cart Icon */}
           <Link to="/cart" className="relative flex items-center">
             <ShoppingCart className="w-5 h-5 text-gray-600" />
             {favcart > 0 && (
@@ -222,7 +220,6 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* User Icon with Dropdown */}
           <div className="relative user-dropdown">
             <User
               className="text-gray-700 w-5 h-5 cursor-pointer"
@@ -235,7 +232,7 @@ export default function Navbar() {
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Logout
                 </button>
@@ -243,7 +240,7 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Toggle */}
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -264,7 +261,9 @@ export default function Navbar() {
                   to={link.link}
                   className="block text-gray-700 hover:text-black text-lg font-medium"
                   onClick={() => {
-                    if (link.name !== "Products") setMobileMenuOpen(false);
+                    if (link.name !== "Products") {
+                      setMobileMenuOpen(false);
+                    }
                   }}
                 >
                   {link.name}

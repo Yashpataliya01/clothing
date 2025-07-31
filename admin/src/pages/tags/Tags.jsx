@@ -17,7 +17,9 @@ const Tags = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:5000/api/tag/tags"); // Updated to match router's GET /
+      const response = await fetch(
+        "https://clothing-kg9h.onrender.com/api/tag/tags"
+      ); // Updated to match router's GET /
       if (!response.ok) {
         throw new Error("Failed to fetch tags");
       }
@@ -40,12 +42,15 @@ const Tags = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:5000/api/tag/tags/", {
-        // Updated to match router's POST /create
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newTagName.trim() }),
-      });
+      const response = await fetch(
+        "https://clothing-kg9h.onrender.com/api/tag/tags/",
+        {
+          // Updated to match router's POST /create
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: newTagName.trim() }),
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Failed to create tag");
@@ -68,12 +73,15 @@ const Tags = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:5000/api/tag/tags/${id}`, {
-        // Updated to match router's PUT /edit/:id
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editTagName.trim() }),
-      });
+      const response = await fetch(
+        `https://clothing-kg9h.onrender.com/api/tag/tags/${id}`,
+        {
+          // Updated to match router's PUT /edit/:id
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: editTagName.trim() }),
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.message || "Failed to update tag");

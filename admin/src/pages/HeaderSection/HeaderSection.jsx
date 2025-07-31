@@ -27,7 +27,9 @@ const HeaderSection = () => {
 
   const fetchHeaders = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/header/");
+      const response = await fetch(
+        "https://clothing-kg9h.onrender.com/api/header/"
+      );
       if (!response.ok) throw new Error("Failed to fetch headers");
       const data = await response.json();
       setHeaders(data);
@@ -101,8 +103,8 @@ const HeaderSection = () => {
 
     try {
       const url = editingId
-        ? `http://localhost:5000/api/header/${editingId}`
-        : "http://localhost:5000/api/header/create";
+        ? `https://clothing-kg9h.onrender.com/api/header/${editingId}`
+        : "https://clothing-kg9h.onrender.com/api/header/create";
       const method = editingId ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -143,7 +145,7 @@ const HeaderSection = () => {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/header/${header._id}`,
+        `https://clothing-kg9h.onrender.com/api/header/${header._id}`,
         {
           method: "DELETE",
         }

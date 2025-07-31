@@ -13,7 +13,9 @@ const AppProvider = ({ children }) => {
       const user = JSON.parse(localStorage.getItem("user"));
       if (user?.uid) {
         try {
-          const res = await fetch(`http://localhost:5000/api/cart/${user.uid}`);
+          const res = await fetch(
+            `https://clothing-kg9h.onrender.com/api/cart/${user.uid}`
+          );
           const data = await res.json();
           setFavcart(data?.cart?.products?.length || 0);
         } catch (error) {

@@ -58,7 +58,7 @@ const Products = () => {
     setError(null); // Reset error state
     try {
       const res = await fetch(
-        `http://localhost:5000/api/product?tags=${encodeURIComponent(
+        `https://clothing-kg9h.onrender.com/api/product?tags=${encodeURIComponent(
           "Most Trending"
         )}`
       );
@@ -80,7 +80,9 @@ const Products = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/categorie");
+        const res = await fetch(
+          "https://clothing-kg9h.onrender.com/api/categorie"
+        );
         if (!res.ok) {
           throw new Error(`Failed to fetch categories: ${res.statusText}`);
         }
@@ -122,7 +124,7 @@ const Products = () => {
   const deleteImageFromCloudinary = async (publicId) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/product/delete-image",
+        "https://clothing-kg9h.onrender.com/api/product/delete-image",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -245,8 +247,8 @@ const Products = () => {
       }
 
       const url = editMode
-        ? `http://localhost:5000/api/product/update/${editId}`
-        : "http://localhost:5000/api/product/create";
+        ? `https://clothing-kg9h.onrender.com/api/product/update/${editId}`
+        : "https://clothing-kg9h.onrender.com/api/product/create";
 
       const method = editMode ? "PUT" : "POST";
 
@@ -292,7 +294,7 @@ const Products = () => {
       await Promise.all(publicIds.map(deleteImageFromCloudinary));
 
       const res = await fetch(
-        `http://localhost:5000/api/product/delete/${id}`,
+        `https://clothing-kg9h.onrender.com/api/product/delete/${id}`,
         {
           method: "DELETE",
         }

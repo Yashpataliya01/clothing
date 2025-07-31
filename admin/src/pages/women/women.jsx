@@ -24,7 +24,7 @@ const Women = () => {
   const fetchCategories = async () => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/categorie/?gender=women"
+        "https://clothing-kg9h.onrender.com/api/categorie/?gender=women"
       );
       const data = await res.json();
       setCategories(data);
@@ -59,7 +59,7 @@ const Women = () => {
   const deleteImageFromCloudinary = async (publicId) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/categorie/delete-image",
+        "https://clothing-kg9h.onrender.com/api/categorie/delete-image",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -134,8 +134,8 @@ const Women = () => {
     }
 
     const url = editMode
-      ? `http://localhost:5000/api/categorie/update/${editId}`
-      : "http://localhost:5000/api/categorie/create";
+      ? `https://clothing-kg9h.onrender.com/api/categorie/update/${editId}`
+      : "https://clothing-kg9h.onrender.com/api/categorie/create";
     const method = editMode ? "PUT" : "POST";
 
     try {
@@ -167,7 +167,7 @@ const Women = () => {
       }
 
       const res = await fetch(
-        `http://localhost:5000/api/categorie/delete/${id}`,
+        `https://clothing-kg9h.onrender.com/api/categorie/delete/${id}`,
         {
           method: "DELETE",
         }

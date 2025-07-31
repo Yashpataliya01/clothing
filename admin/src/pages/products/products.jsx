@@ -64,7 +64,7 @@ const Products = () => {
     setError(null);
     try {
       const res = await fetch(
-        `http://localhost:5000/api/product?category=${category._id}`
+        `https://clothing-kg9h.onrender.com/api/product?category=${category._id}`
       );
       if (!res.ok)
         throw new Error(`Failed to fetch products: ${res.statusText}`);
@@ -83,7 +83,9 @@ const Products = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:5000/api/tag/tags");
+      const response = await fetch(
+        "https://clothing-kg9h.onrender.com/api/tag/tags"
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch tags: ${response.statusText}`);
       }
@@ -130,7 +132,7 @@ const Products = () => {
   const deleteImageFromBackend = async (productId, publicId) => {
     try {
       const res = await fetch(
-        "http://localhost:5000/api/product/delete-image",
+        "https://clothing-kg9h.onrender.com/api/product/delete-image",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -278,8 +280,8 @@ const Products = () => {
       }
 
       const url = editMode
-        ? `http://localhost:5000/api/product/update/${editId}`
-        : "http://localhost:5000/api/product/create";
+        ? `https://clothing-kg9h.onrender.com/api/product/update/${editId}`
+        : "https://clothing-kg9h.onrender.com/api/product/create";
       const response = await fetch(url, {
         method: editMode ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -313,7 +315,7 @@ const Products = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:5000/api/product/delete/${id}`,
+        `https://clothing-kg9h.onrender.com/api/product/delete/${id}`,
         { method: "DELETE" }
       );
       if (!response.ok) {

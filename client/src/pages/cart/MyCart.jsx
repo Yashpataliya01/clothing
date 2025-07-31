@@ -80,7 +80,9 @@ const MyCart = () => {
     }
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/cart/${user.uid}`);
+      const res = await fetch(
+        `https://clothing-kg9h.onrender.com/api/cart/${user.uid}`
+      );
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "Failed to fetch cart");
       setCart(json.cart);
@@ -95,7 +97,9 @@ const MyCart = () => {
 
   const fetchDiscounts = useCallback(async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/discounts/`);
+      const res = await fetch(
+        `https://clothing-kg9h.onrender.com/api/discounts/`
+      );
       const json = await res.json();
       if (!res.ok) throw new Error(json.message || "Failed to fetch discounts");
       setDiscounts(json.data);
@@ -114,7 +118,7 @@ const MyCart = () => {
     try {
       setUpdating((prev) => ({ ...prev, [productId + size]: true }));
       const res = await fetch(
-        `http://localhost:5000/api/cart/update/${cartId}`,
+        `https://clothing-kg9h.onrender.com/api/cart/update/${cartId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -143,7 +147,7 @@ const MyCart = () => {
     try {
       setUpdating((prev) => ({ ...prev, [productId + size]: true }));
       const res = await fetch(
-        `http://localhost:5000/api/cart/delete/${cartId}`,
+        `https://clothing-kg9h.onrender.com/api/cart/delete/${cartId}`,
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
