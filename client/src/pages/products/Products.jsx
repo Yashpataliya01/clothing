@@ -6,7 +6,7 @@ import FilterModal from "./components/FilterModal";
 import SortModal from "./components/SortModal";
 import ProductGrid from "./components/ProductGrid";
 import FilterBar from "./components/FilterBar";
-import { useGetProductsQuery } from "../../services/productsApi.js";
+import { useGetProductsQuery } from "../../services/productsApi.js"; // Adjust path based on your project structure
 
 const ProductsPage = () => {
   const location = useLocation();
@@ -26,7 +26,7 @@ const ProductsPage = () => {
     minPrice: "",
     maxPrice: "",
     category: categoryId ? [categoryId] : [],
-    categoryName: [],
+    categoryName: [], // Added categoryName filter
   });
   const [sortBy, setSortBy] = useState("relevance");
   const [viewMode, setViewMode] = useState("grid");
@@ -36,11 +36,12 @@ const ProductsPage = () => {
     color: true,
     gender: true,
     tags: true,
-    categoryName: true,
+    categoryName: true, // Added categoryName to openFilters
   });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortModalOpen, setIsSortModalOpen] = useState(false);
 
+  // Fetch products using RTK Query
   const {
     data: products = [],
     isLoading,
@@ -55,15 +56,16 @@ const ProductsPage = () => {
     maxPrice: filters.maxPrice || undefined,
     categoryName: filters.categoryName.length
       ? filters.categoryName.join(",")
-      : undefined,
+      : undefined, // Added categoryName to query
   });
 
+  console.log("Products:", products);
   const filterOptions = useMemo(() => {
     const sizes = new Set();
     const colors = new Set();
     const genders = new Set();
     const tags = new Set(initialTag ? [initialTag] : []);
-    const categoryNames = new Set();
+    const categoryNames = new Set(); // Added Set for category names
 
     products.forEach((product) => {
       if (product.size && Array.isArray(product.size)) {
@@ -82,7 +84,7 @@ const ProductsPage = () => {
         tags.add(product.tag);
       }
       if (product.category?.name) {
-        categoryNames.add(product.category.name);
+        categoryNames.add(product.category.name); // Add category name to Set
       }
     });
 
@@ -91,7 +93,7 @@ const ProductsPage = () => {
       colors: Array.from(colors).sort(),
       genders: Array.from(genders).sort(),
       tags: Array.from(tags).sort(),
-      categoryNames: Array.from(categoryNames).sort(),
+      categoryNames: Array.from(categoryNames).sort(), // Added categoryNames to options
     };
     return options;
   }, [products, initialTag]);
@@ -146,7 +148,7 @@ const ProductsPage = () => {
       minPrice: "",
       maxPrice: "",
       category: categoryId ? [categoryId] : [],
-      categoryName: [],
+      categoryName: [], // Added categoryName to clearFilters
     });
   };
 

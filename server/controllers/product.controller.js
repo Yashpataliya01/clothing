@@ -166,19 +166,18 @@ export const createProduct = async (req, res) => {
     const processedVariants = variants.map((variant) => {
       if (
         !variant.color ||
-        !Array.isArray(variant.media) ||
-        variant.media.length === 0
+        !Array.isArray(variant.images) ||
+        variant.images.length === 0
       ) {
         throw new Error(
-          "Each variant must have a color and at least one media item"
+          "Each variant must have a color and at least one image"
         );
       }
       return {
         color: variant.color,
-        media: variant.media.map((m) => ({
-          url: m.url,
-          publicId: m.publicId || null,
-          type: m.type || "image",
+        images: variant.images.map((img) => ({
+          url: img.url,
+          publicId: img.publicId || null,
         })),
       };
     });
@@ -225,19 +224,18 @@ export const updateProduct = async (req, res) => {
     const processedVariants = variants.map((variant) => {
       if (
         !variant.color ||
-        !Array.isArray(variant.media) ||
-        variant.media.length === 0
+        !Array.isArray(variant.images) ||
+        variant.images.length === 0
       ) {
         throw new Error(
-          "Each variant must have a color and at least one media item"
+          "Each variant must have a color and at least one image"
         );
       }
       return {
         color: variant.color,
-        media: variant.media.map((m) => ({
-          url: m.url,
-          publicId: m.publicId || null,
-          type: m.type || "image",
+        images: variant.images.map((img) => ({
+          url: img.url,
+          publicId: img.publicId || null,
         })),
       };
     });
@@ -261,24 +259,6 @@ export const updateProduct = async (req, res) => {
       message: "Product updated successfully",
       product: updatedProduct,
     });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-export const deleteMedia = async (req, res) => {
-  const { productId, publicId } = req.body;
-  try {
-    const product = await Products.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    product.variants = product.variants.map((variant) => ({
-      ...variant,
-      media: variant.media.filter((m) => m.publicId !== publicId),
-    }));
-    await product.save();
-    res.status(200).json({ message: "Media deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
