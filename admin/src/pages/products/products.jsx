@@ -44,7 +44,7 @@ const Products = () => {
     price: "",
     discountedPrice: "",
     category: category?._id || "",
-    variants: [{ color: "", images: [] }],
+    variants: [{ color: "", media: [] }], // Changed images to media
     size: [],
     sizeInput: "",
     tag: "",
@@ -56,7 +56,7 @@ const Products = () => {
     UPLOAD_PRESET: "bg8efuux",
     CLOUD_NAME: "dlyq8wjky",
     API_KEY: "683781286465483",
-    UPLOAD_URL: `https://api.cloudinary.com/v1_1/dlyq8wjky/image/upload`,
+    UPLOAD_URL: `https://api.cloudinary.com/v1_1/dlyq8wjky/upload`, // Updated to generic upload endpoint
   };
 
   const fetchProducts = async () => {
@@ -107,41 +107,49 @@ const Products = () => {
     }
   }, [category]);
 
-  const uploadImageToCloudinary = async (file) => {
+  const uploadMediaToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_CONFIG.UPLOAD_PRESET);
     formData.append("api_key", CLOUDINARY_CONFIG.API_KEY);
+    formData.append(
+      "resource_type",
+      file.type.startsWith("video") ? "video" : "image"
+    );
     try {
       const res = await fetch(CLOUDINARY_CONFIG.UPLOAD_URL, {
         method: "POST",
         body: formData,
       });
-      if (!res.ok) throw new Error("Image upload failed");
+      if (!res.ok) throw new Error("Media upload failed");
       const data = await res.json();
       if (data.secure_url) {
-        return { url: data.secure_url, publicId: data.public_id };
+        return {
+          url: data.secure_url,
+          publicId: data.public_id,
+          type: file.type.startsWith("video") ? "video" : "image",
+        };
       }
-      throw new Error("Image upload failed");
+      throw new Error("Media upload failed");
     } catch (err) {
-      console.error("Error uploading image:", err);
+      console.error("Error uploading media:", err);
       throw err;
     }
   };
 
-  const deleteImageFromBackend = async (productId, publicId) => {
+  const deleteMediaFromBackend = async (productId, publicId) => {
     try {
       const res = await fetch(
-        "https://clothing-kg9h.onrender.com/api/product/delete-image",
+        "https://clothing-kg9h.onrender.com/api/product/delete-media",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ productId, publicId }),
         }
       );
-      if (!res.ok) throw new Error("Failed to remove image from product");
+      if (!res.ok) throw new Error("Failed to remove media from product");
     } catch (err) {
-      console.error("Error removing image:", err);
+      console.error("Error removing media:", err);
       throw err;
     }
   };
@@ -157,12 +165,13 @@ const Products = () => {
             category: category?._id || "",
             variants: prod.variants?.map((v) => ({
               color: v.color || "",
-              images:
-                v.images?.map((img) => ({
-                  url: img.url || img || "",
-                  publicId: img.publicId || null,
+              media:
+                v.media?.map((m) => ({
+                  url: m.url || m || "",
+                  publicId: m.publicId || null,
+                  type: m.type || "image",
                 })) || [],
-            })) || [{ color: "", images: [] }],
+            })) || [{ color: "", media: [] }],
             size: prod.size || [],
             sizeInput: prod.size?.join(", ") || "",
             tag: prod.tag?.name || "",
@@ -189,9 +198,9 @@ const Products = () => {
   const handleVariantChange = (index, field, value) => {
     const updatedVariants = [...form.variants];
     if (field === "color") updatedVariants[index].color = value;
-    else if (field === "image")
-      updatedVariants[index].images = [
-        ...updatedVariants[index].images,
+    else if (field === "media")
+      updatedVariants[index].media = [
+        ...updatedVariants[index].media,
         ...Array.from(value),
       ];
     setForm((prev) => ({ ...prev, variants: updatedVariants }));
@@ -211,29 +220,29 @@ const Products = () => {
   const addVariant = () =>
     setForm((prev) => ({
       ...prev,
-      variants: [...prev.variants, { color: "", images: [] }],
+      variants: [...prev.variants, { color: "", media: [] }],
     }));
 
   const removeVariant = (index) => {
     const updated = form.variants.filter((_, i) => i !== index);
     setForm({
       ...form,
-      variants: updated.length ? updated : [{ color: "", images: [] }],
+      variants: updated.length ? updated : [{ color: "", media: [] }],
     });
   };
 
-  const removeImage = async (variantIndex, imgIndex) => {
+  const removeMedia = async (variantIndex, mediaIndex) => {
     const updatedVariants = [...form.variants];
-    const image = updatedVariants[variantIndex].images[imgIndex];
-    if (editMode && image.publicId) {
+    const media = updatedVariants[variantIndex].media[mediaIndex];
+    if (editMode && media.publicId) {
       try {
-        await deleteImageFromBackend(editId, image.publicId);
+        await deleteMediaFromBackend(editId, media.publicId);
       } catch (err) {
         setError(err.message);
         return;
       }
     }
-    updatedVariants[variantIndex].images.splice(imgIndex, 1);
+    updatedVariants[variantIndex].media.splice(mediaIndex, 1);
     setForm({ ...form, variants: updatedVariants });
   };
 
@@ -244,23 +253,25 @@ const Products = () => {
     try {
       const processedVariants = await Promise.all(
         form.variants.map(async (variant) => {
-          const uploadedImages = await Promise.all(
-            variant.images.map(async (image) => {
-              if (typeof image === "string" && image.startsWith("http")) {
+          const uploadedMedia = await Promise.all(
+            variant.media.map(async (media) => {
+              if (typeof media === "string" && media.startsWith("http")) {
                 return {
-                  url: image,
+                  url: media,
                   publicId:
-                    variant.images.find((img) => img.url === image)?.publicId ||
+                    variant.media.find((m) => m.url === media)?.publicId ||
                     null,
+                  type:
+                    variant.media.find((m) => m.url === media)?.type || "image",
                 };
               }
-              if (image instanceof File) {
-                return await uploadImageToCloudinary(image);
+              if (media instanceof File) {
+                return await uploadMediaToCloudinary(media);
               }
-              return image;
+              return media;
             })
           );
-          return { color: variant.color, images: uploadedImages };
+          return { color: variant.color, media: uploadedMedia };
         })
       );
 
@@ -268,14 +279,14 @@ const Products = () => {
         const existing = products.find((p) => p._id === editId);
         const existingIds =
           existing?.variants
-            ?.flatMap((v) => v.images.map((img) => img.publicId))
+            ?.flatMap((v) => v.media.map((m) => m.publicId))
             ?.filter(Boolean) || [];
         const currentIds = processedVariants
-          .flatMap((v) => v.images.map((img) => img.publicId))
+          .flatMap((v) => v.media.map((m) => m.publicId))
           .filter(Boolean);
         const removed = existingIds.filter((id) => !currentIds.includes(id));
         await Promise.all(
-          removed.map((publicId) => deleteImageFromBackend(editId, publicId))
+          removed.map((publicId) => deleteMediaFromBackend(editId, publicId))
         );
       }
 
@@ -292,7 +303,7 @@ const Products = () => {
           variants: processedVariants,
           category: category?._id || "",
           size: form.size,
-          tag: form.tag || undefined, // Send tag name instead of _id
+          tag: form.tag || undefined,
         }),
       });
 
@@ -377,14 +388,22 @@ const Products = () => {
                     {prod.tag.name}
                   </span>
                 )}
-                <img
-                  src={
-                    prod.variants[0]?.images[0]?.url ||
-                    "https://via.placeholder.com/150"
-                  }
-                  alt={prod.name || "Product"}
-                  className="w-full h-40 sm:h-48 object-cover"
-                />
+                {prod.variants[0]?.media[0]?.type === "video" ? (
+                  <video
+                    src={prod.variants[0]?.media[0]?.url}
+                    className="w-full h-40 sm:h-48 object-cover"
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={
+                      prod.variants[0]?.media[0]?.url ||
+                      "https://via.placeholder.com/150"
+                    }
+                    alt={prod.name || "Product"}
+                    className="w-full h-40 sm:h-48 object-cover"
+                  />
+                )}
                 <div className="p-4">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">
                     {prod.name || "N/A"}
@@ -507,29 +526,29 @@ const Products = () => {
                     <input
                       type="file"
                       multiple
-                      accept="image/*"
+                      accept="image/*,video/mp4,video/webm"
                       onChange={(e) =>
-                        handleVariantChange(index, "image", e.target.files)
+                        handleVariantChange(index, "media", e.target.files)
                       }
                       className="border p-2 rounded w-full text-sm sm:text-base"
-                      required={!editMode || !variant.images.length}
+                      required={!editMode || !variant.media.length}
                     />
-                    {variant.images.length > 0 && (
+                    {variant.media.length > 0 && (
                       <div className="space-y-1">
                         <p className="text-xs sm:text-sm text-gray-600">
-                          Uploaded Images:
+                          Uploaded Media:
                         </p>
-                        {variant.images.map((img, i) => (
+                        {variant.media.map((media, i) => (
                           <div
                             key={i}
                             className="flex justify-between text-xs sm:text-sm"
                           >
                             <span className="truncate">
-                              {img.name || img.url || "Image"}
+                              {media.name || media.url || "Media"}
                             </span>
                             <button
                               type="button"
-                              onClick={() => removeImage(index, i)}
+                              onClick={() => removeMedia(index, i)}
                               className="text-red-600"
                             >
                               Remove
